@@ -35,7 +35,7 @@ import { useSelector } from "react-redux"
 
 export default function Shop() {
   return (
-    <Suspense fallback={<div>Loading shop...</div>}>
+    <Suspense fallback={<div>Loading shop.....</div>}>
       <ShopContent />
     </Suspense>
   );
