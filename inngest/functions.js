@@ -29,12 +29,12 @@ export const syncUserUpdation = inngest.createFunction(
           email: data.email_addresses[0].email_address,
           name: `${data.first_name} ${data.last_name}`,
           image: data.image_url,
-        },
-      });
-    },
-  );
+        }
+      })
+    }
+  )
 
-  export const syncUserDeletion = ingest.createFunction(
+  export const syncUserDeletion = inngest.createFunction(
     { id: 'sync-user-delete' },
     { event: 'clerk/user.deleted' },
     async ({ event }) => {
