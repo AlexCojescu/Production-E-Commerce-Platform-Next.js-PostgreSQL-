@@ -1,5 +1,5 @@
 'use client'
-import { Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart, PackageIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -58,7 +58,7 @@ const Navbar = () => {
                             ) : (
                                 <UserButton> 
                                     <UserButton.MenuItems>
-                                        <UserButton.Action LabelIcon={<PackageIcon size={16}/>} label="My Orders" onClick={() => router.push('/orders')} /> 
+                                        <UserButton.Action labelIcon={<PackageIcon size={16}/>} label="My Orders" onClick={() => router.push('/orders')}/> 
                                     </UserButton.MenuItems>
                                 </UserButton>
                             )
@@ -74,12 +74,12 @@ const Navbar = () => {
                             <div>
                                 <UserButton> 
                                     <UserButton.MenuItems>
-                                        <UserButton.Action LabelIcon={<ShoppingCart size={16}/>} label="Cart" onClick={() => router.push('/cart')} /> 
+                                        <UserButton.Action labelIcon={<ShoppingCart size={16}/>} label="Cart" onClick={() => router.push('/cart')} /> 
                                     </UserButton.MenuItems>
                                 </UserButton>
                                 <UserButton> 
                                     <UserButton.MenuItems>
-                                        <UserButton.Action LabelIcon={<PackageIcon size={16}/>} label="My Orders" onClick={() => router.push('/orders')} /> 
+                                        <UserButton.Action labelIcon={<PackageIcon size={16}/>} label="My Orders" onClick={() => router.push('/orders')} /> 
                                     </UserButton.MenuItems>
                                 </UserButton>
                             </div>
