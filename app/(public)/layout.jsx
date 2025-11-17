@@ -1,5 +1,4 @@
 'use client'
-import Banner from "@/components/Banner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect } from "react";
@@ -42,7 +41,6 @@ export default function PublicLayout({ children }) {
   // The rest of the component's JSX return statement would go here
     return (
         <>
-            <Banner />
             <Navbar />
             {children}
             <Footer />

@@ -1,7 +1,10 @@
 'use client'
 import Loading from "@/components/Loading"
 import { useEffect, useState } from "react"
+import { useAuth } from "@clerk/nextjs";
 import axios from 'axios'
+import toast from "react-hot-toast";
+
 
 export default function StoreOrders() {
     const [orders, setOrders] = useState([])
