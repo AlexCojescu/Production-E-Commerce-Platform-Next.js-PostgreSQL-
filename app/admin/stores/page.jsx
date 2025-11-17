@@ -21,7 +21,9 @@ export default function AdminStores() {
     const fetchStores = async () => {
         try {
             const token = await getToken()
-            const { data } = await axios.get('/api/admin/stores', {headers: { Authorization: `Bearer ${token}` }})        } catch (error) {
+            const { data } = await axios.get('/api/admin/stores', {headers: { Authorization: `Bearer ${token}` }})
+            setStores(data.stores)
+        } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
         }
         setLoading(false)
