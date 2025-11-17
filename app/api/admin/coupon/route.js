@@ -4,6 +4,7 @@ import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+
 // Add new coupon
 
 export async function POST(request) {
@@ -14,8 +15,8 @@ export async function POST(request) {
       if (!isAdmin) {
         return NextResponse.json({ error: "not authorized" }, { status: 401 })
       }
-  
-      const coupon = await request.json()
+
+      const { coupon } = await request.json()
         coupon.code = coupon.code.toUpperCase()
 
             await prisma.coupon.create({data: coupon}).then(async(coupon) => {
@@ -36,7 +37,6 @@ export async function POST(request) {
         }
 }
 
-//Delete coupon /api/coupon?id=couponId
 
 // Delete coupon /api/coupon?id=couponId
 export async function DELETE(request) {
@@ -47,8 +47,8 @@ export async function DELETE(request) {
       if (!isAdmin) {
         return NextResponse.json({ error: "not authorized" }, { status: 401 })
       }
-  
-      const searchParams = request.nextUrl
+
+      const searchParams = request.nextUrl.searchParams
       const code = searchParams.get('code')
   
       await prisma.coupon.delete({where: { code }})
