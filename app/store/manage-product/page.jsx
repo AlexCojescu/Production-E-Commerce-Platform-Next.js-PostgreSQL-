@@ -18,14 +18,16 @@ export default function StoreManageProducts() {
     const [products, setProducts] = useState([])
 
     const fetchProducts = async () => {
-        
+
         try {
             const token = await getToken()
             const { data } = await axios.get('/api/store/product', {headers: {
-              Authorization: `Bearer ${token}` 
+              Authorization: `Bearer ${token}`
             }})
-            
-            setProducts(data.products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)))
+
+            // Only show products that are in stock
+            const inStockProducts = data.products.filter(product => product.inStock)
+            setProducts(inStockProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)))
           } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
           }
@@ -34,23 +36,18 @@ export default function StoreManageProducts() {
     }
 
     const toggleStock = async (productId) => {
-        // Logic to toggle the stock of a product
         try {
-            const toggleStock = async (productId) => {
-                const token = await getToken()
-                const { data } = await axios.post('/api/store/stock-toggle', { productId },
-                  { headers: { Authorization: `Bearer ${token}` } })
-              
-                setProducts(prevProducts => prevProducts.map(product => product.id ===
-                  productId ? { ...product, inStock: !product.inStock } : product))
-              
-                toast.success(data.message)
-              }
+            const token = await getToken()
+            const { data } = await axios.post('/api/store/stock-toggle', { productId },
+                { headers: { Authorization: `Bearer ${token}` } })
+
+            // Remove the product from the view when toggled to out of stock
+            setProducts(prevProducts => prevProducts.filter(product => product.id !== productId))
+
+            toast.success(data.message)
         } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
-
         }
-
     }
 
     useEffect(() => {
