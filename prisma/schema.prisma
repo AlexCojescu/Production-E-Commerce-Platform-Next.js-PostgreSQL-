@@ -24,7 +24,7 @@ model User {
     buyerOrders Order[]   @relation("BuyerRelation")
 }
 
-// Required for creating a Product: name, description, mrp, price, images, category, storeId
+// Required for creating a Product: name, description, mrp, price, images, category, brand, condition, storeId
 model Product {
     id          String   @id @default(cuid())
     name        String
@@ -33,6 +33,8 @@ model Product {
     price       Float
     images      String[]
     category    String
+    brand       String   @default("N/A")
+    condition   String   @default("N/A")
     inStock     Boolean  @default(true)
     storeId     String
     createdAt   DateTime @default(now())

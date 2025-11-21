@@ -152,6 +152,8 @@ export default function StoreOrders() {
                                         />
                                         <div className="flex-1">
                                             <p className="text-slate-800">{item.product?.name}</p>
+                                            <p className="text-xs text-slate-600">Brand: <b>{item.product?.brand || 'N/A'}</b></p>
+                                            <p className="text-xs text-slate-600">Condition: <b>{item.product?.condition || 'N/A'}</b></p> {/* <-- NEW LINE */}
                                             <p>Qty: {item.quantity}</p>
                                             <p>Price: ${item.price}</p>
                                         </div>

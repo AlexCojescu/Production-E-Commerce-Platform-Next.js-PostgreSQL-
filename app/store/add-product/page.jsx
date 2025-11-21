@@ -9,7 +9,26 @@ import { useAuth } from "@clerk/nextjs"
 
 export default function StoreAddProduct() {
 
-    const categories = ['Electronics', 'Clothing', 'Home & Kitchen', 'Beauty & Health', 'Toys & Games', 'Sports & Outdoors', 'Books & Media', 'Food & Drink', 'Hobbies & Crafts', 'Others']
+    // Define clothing categories (Types)
+    const clothingCategories = [
+        "Tops", "Bottoms", "Outerwear", "Dresses", "Footwear", "Accessories"
+    ];
+
+    // Define brands
+    const clothingBrands = [
+        "Balenciaga", "Vetements", "Rick Owens", "ERD (Enfants Riches Déprimés)", "Gucci", "Prada", "Acne Studios", "Other"
+    ];
+
+    // --- NEW: Define Condition Options ---
+    const conditionOptions = [
+        "New with Tags (NWT)", 
+        "New without Tags (NWOT)", 
+        "Excellent (Pre-owned)", 
+        "Very Good (Pre-owned)", 
+        "Good (Pre-owned)",
+        "Distressed / Vintage"
+    ];
+    // -------------------------------------
 
     const [images, setImages] = useState({ 1: null, 2: null, 3: null, 4: null })
     const [productInfo, setProductInfo] = useState({
@@ -17,7 +36,11 @@ export default function StoreAddProduct() {
         description: "",
         mrp: 0,
         price: 0,
-        category: "",
+        clothingType: "",
+        brand: "",
+        // --- NEW: State for Condition ---
+        productCondition: "", 
+        // --------------------------------
     })
     const [loading, setLoading] = useState(false)
 
@@ -32,7 +55,18 @@ export default function StoreAddProduct() {
         e.preventDefault();
       
         try {
-          // if no images are uploaded then return
+          // Check for required fields including the new ones
+          if (!productInfo.clothingType) {
+            return toast.error('Please select a clothing type');
+          }
+          if (!productInfo.brand) {
+            return toast.error('Please select a brand');
+          }
+          // --- NEW: Condition Check ---
+          if (!productInfo.productCondition) {
+            return toast.error('Please select the product condition');
+          }
+          // --------------------------
           if (!images[1] && !images[2] && !images[3] && !images[4]) {
             return toast.error('Please upload at least one image');
           }
@@ -43,13 +77,19 @@ export default function StoreAddProduct() {
             formData.append('description', productInfo.description);
             formData.append('mrp', productInfo.mrp);
             formData.append('price', productInfo.price);
-            formData.append('category', productInfo.category);
+            formData.append('category', productInfo.clothingType); 
+            formData.append('brand', productInfo.brand);
+            // --- NEW: Append Condition to FormData ---
+            formData.append('condition', productInfo.productCondition); 
+            // ------------------------------------------
 
             // Adding Images to FormData
             Object.keys(images).forEach((key) => {
                 images[key] && formData.append('images', images[key]);
             })
             const token = await getToken();
+            
+            // Note: The backend /api/store/product MUST be updated to accept the 'condition' field
             const { data } = await axios.post('/api/store/product', formData, {
             headers: { Authorization: `Bearer ${token}` }
             });
@@ -62,7 +102,11 @@ export default function StoreAddProduct() {
                     description: "",
                     mrp: 0,
                     price: 0,
-                    category: "",
+                    clothingType: "",
+                    brand: "",
+                    // --- NEW: Reset Condition ---
+                    productCondition: "", 
+                    // ----------------------------
                     })
                     // reset images
                     setImages({ 1: null, 2: null, 3: null, 4: null });
@@ -108,13 +152,43 @@ export default function StoreAddProduct() {
                     <input type="number" name="price" onChange={onChangeHandler} value={productInfo.price} placeholder="0" rows={5} className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none" required />
                 </label>
             </div>
-
-            <select onChange={e => setProductInfo({ ...productInfo, category: e.target.value })} value={productInfo.category} className="w-full max-w-sm p-2 px-4 my-6 outline-none border border-slate-200 rounded" required>
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
+            
+            {/* Select for Clothing Type */}
+            <select 
+                onChange={e => setProductInfo({ ...productInfo, clothingType: e.target.value })} 
+                value={productInfo.clothingType} 
+                className="w-full max-w-sm p-2 px-4 mt-6 outline-none border border-slate-200 rounded" required
+            >
+                <option value="">Select Clothing Type (Category)</option>
+                {clothingCategories.map((type) => (
+                    <option key={type} value={type}>{type}</option>
                 ))}
             </select>
+            
+            {/* Select for Brand */}
+            <select 
+                onChange={e => setProductInfo({ ...productInfo, brand: e.target.value })} 
+                value={productInfo.brand} 
+                className="w-full max-w-sm p-2 px-4 my-6 outline-none border border-slate-200 rounded" required
+            >
+                <option value="">Select Brand</option>
+                {clothingBrands.map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
+                ))}
+            </select>
+
+            {/* --- NEW: Select for Condition --- */}
+            <select 
+                onChange={e => setProductInfo({ ...productInfo, productCondition: e.target.value })} 
+                value={productInfo.productCondition} 
+                className="w-full max-w-sm p-2 px-4 mb-6 outline-none border border-slate-200 rounded" required
+            >
+                <option value="">Select Product Condition</option>
+                {conditionOptions.map((condition) => (
+                    <option key={condition} value={condition}>{condition}</option>
+                ))}
+            </select>
+            {/* --------------------------------- */}
 
             <br />
 

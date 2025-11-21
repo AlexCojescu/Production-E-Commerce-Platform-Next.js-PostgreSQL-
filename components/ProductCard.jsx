@@ -1,33 +1,87 @@
 'use client'
 import { StarIcon } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
 import React from 'react'
 
 const ProductCard = ({ product }) => {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
-    // calculate the average rating of the product
-    const rating = Math.round(product.rating.reduce((acc, curr) => acc + curr.rating, 0) / product.rating.length);
+    // Calculate the average rating of the product
+    // Ensure product.rating exists before attempting to reduce it
+    const rating = product.rating && product.rating.length > 0
+        ? Math.round(product.rating.reduce((acc, curr) => acc + curr.rating, 0) / product.rating.length)
+        : 0;
+    
+    // Fallback/Demo values for new fields if not yet in dummy data
+    const brandName = product.brand || 'Luxury Archive'; 
+    const conditionText = product.condition || 'Excellent (Pre-owned)';
+
 
     return (
-        <Link href={`/product/${product.id}`} className=' group max-xl:mx-auto'>
-            <div className='bg-[#F5F5F5] h-40  sm:w-60 sm:h-68 rounded-lg flex items-center justify-center'>
-                <Image width={500} height={500} className='max-h-30 sm:max-h-40 w-auto group-hover:scale-115 transition duration-300' src={product.images[0]} alt="" />
+        // Replaced next/link with standard <a> tag
+        <a 
+            href={`/product/${product.id}`} 
+            className='group block w-full max-w-xs mx-auto transition duration-300 hover:shadow-xl hover:scale-[1.01] rounded-lg overflow-hidden bg-white'
+        >
+            {/* 1. Image Container - Clean, Minimal Background */}
+            <div className='aspect-[3/4] bg-white border border-gray-100 overflow-hidden'>
+                {/* Replaced next/image with standard <img> tag */}
+                <img 
+                    width={800} 
+                    height={1000} 
+                    className='w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-330' 
+                    src={product.images && product.images[0]} 
+                    alt={product.name} 
+                    loading="lazy"
+                />
             </div>
-            <div className='flex justify-between gap-3 text-sm text-slate-800 pt-2 max-w-60'>
-                <div>
-                    <p>{product.name}</p>
-                    <div className='flex'>
-                        {Array(5).fill('').map((_, index) => (
-                            <StarIcon key={index} size={14} className='text-transparent mt-0.5' fill={rating >= index + 1 ? "#00C950" : "#D1D5DB"} />
-                        ))}
-                    </div>
+
+            {/* 2. Text Content - Structured Hierarchy */}
+            <div className='flex flex-col p-3 text-black'>
+                
+                {/* Row 1: Brand & Price */}
+                <div className='flex justify-between items-start mb-1'>
+                    {/* Brand Name (Bold, Primary Focus) */}
+                    <p className='text-sm font-semibold uppercase tracking-wider text-gray-900 leading-tight'>
+                        {brandName}
+                    </p>
+                    {/* Price (Clear, easy to read) */}
+                    <p className='text-base font-bold text-gray-900'>
+                        {currency}{product.price.toLocaleString('en-US')}
+                    </p>
                 </div>
-                <p>{currency}{product.price}</p>
+
+                {/* Row 2: Product Name & Condition (Secondary Info) */}
+                <div className='flex justify-between items-center text-xs text-gray-500'>
+                    {/* Product Name (Subtle) */}
+                    <p className='truncate max-w-[60%] font-light'>
+                        {product.name}
+                    </p>
+                    {/* Condition (as a small badge) */}
+                    <span className='text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full'>
+                        {conditionText.split('(')[0].trim()}
+                    </span>
+                </div>
+                
+                {/* Row 3: Rating (De-emphasized/Optional) */}
+                {product.rating && product.rating.length > 0 && (
+                    <div className='flex items-center mt-2'>
+                        {Array(5).fill('').map((_, index) => (
+                            <StarIcon 
+                                key={index} 
+                                size={12} 
+                                className='mt-0.5 transition' 
+                                fill={rating >= index + 1 ? "#000000" : "#E5E7EB"} // Changed to black/light gray
+                                strokeWidth={0}
+                            />
+                        ))}
+                        <span className='ml-1 text-xs text-gray-500'>
+                            ({product.rating.length})
+                        </span>
+                    </div>
+                )}
             </div>
-        </Link>
+        </a>
     )
 }
 

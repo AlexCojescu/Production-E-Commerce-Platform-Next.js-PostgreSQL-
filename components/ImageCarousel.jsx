@@ -11,7 +11,7 @@ const ImageCarousel = () => {
     { 
       src: assets.car1, 
       alt: 'Slide 1',
-      subtitle: 'RICK OWENS, MFPEN + MORE',
+      subtitle: 'RICK OWENS, Vetements, + MORE',
       title: 'Trending Denim + Pants',
       buttonText: 'SHOP NOW'
     },
@@ -19,7 +19,7 @@ const ImageCarousel = () => {
       src: assets.car2, 
       alt: 'Slide 2',
       subtitle: 'NEW COLLECTION',
-      title: 'Summer Essentials',
+      title: 'Footware Favorites',
       buttonText: 'EXPLORE'
     },
     { 
