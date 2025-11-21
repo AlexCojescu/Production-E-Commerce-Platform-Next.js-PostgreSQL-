@@ -1,6 +1,7 @@
 'use client'
 import { StarIcon } from 'lucide-react'
 import React from 'react'
+import FavoriteButton from './FavoriteButton'
 
 const ProductCard = ({ product }) => {
 
@@ -19,19 +20,27 @@ const ProductCard = ({ product }) => {
 
     return (
         // Replaced next/link with standard <a> tag
-        <a 
-            href={`/product/${product.id}`} 
+        <a
+            href={`/product/${product.id}`}
             className='group block w-full max-w-xs mx-auto transition duration-300 hover:shadow-xl hover:scale-[1.01] rounded-lg overflow-hidden bg-white'
         >
             {/* 1. Image Container - Clean, Minimal Background */}
-            <div className='aspect-[3/4] bg-white border border-gray-100 overflow-hidden'>
+            <div className='aspect-[3/4] bg-white border border-gray-100 overflow-hidden relative'>
+                {/* Favorite Button - Positioned absolutely */}
+                <div className="absolute top-2 right-2 z-10">
+                    <FavoriteButton
+                        productId={product.id}
+                        initialIsFavorited={product.isFavorited || false}
+                    />
+                </div>
+
                 {/* Replaced next/image with standard <img> tag */}
-                <img 
-                    width={800} 
-                    height={1000} 
-                    className='w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-330' 
-                    src={product.images && product.images[0]} 
-                    alt={product.name} 
+                <img
+                    width={800}
+                    height={1000}
+                    className='w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-330'
+                    src={product.images && product.images[0]}
+                    alt={product.name}
                     loading="lazy"
                 />
             </div>

@@ -1,5 +1,5 @@
 'use client'
-import { Search, ShoppingCart, PackageIcon } from "lucide-react";
+import { Search, ShoppingCart, PackageIcon, Heart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -57,6 +57,11 @@ const Navbar = () => {
                         />
                     </form>
 
+                    <Link href="/favorites" className="flex items-center gap-1 text-neutral-700 hover:text-black transition">
+                        <Heart size={20}/>
+                        <span className="ml-0.5">Favorites</span>
+                    </Link>
+
                     <Link href="/cart" className="relative flex items-center gap-1 text-neutral-700 hover:text-black transition">
                         <ShoppingCart size={20}/>
                         <span className="ml-0.5">Cart</span>
@@ -90,7 +95,10 @@ const Navbar = () => {
                 </div>
 
                 {/* Mobile Nav */}
-                <div className="sm:hidden flex items-center gap-2">
+                <div className="sm:hidden flex items-center gap-3">
+                    <Link href="/favorites">
+                        <Heart size={22} className="text-neutral-700" />
+                    </Link>
                     <Link href="/cart" className="relative">
                         <ShoppingCart size={22} className="text-neutral-700" />
                         {cartCount > 0 && (
