@@ -1,5 +1,5 @@
 'use client'
-import { Search, ShoppingCart, PackageIcon, Heart } from "lucide-react";
+import { Search, ShoppingCart, PackageIcon, Heart, XIcon, MoveLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,21 +14,58 @@ const Navbar = () => {
     const hasPlusPlan = has ? has({ plan: 'plus' }) : false;
 
     const [search, setSearch] = useState('');
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); // NEW STATE FOR MOBILE SEARCH
     const cartCount = useSelector(state => state.cart.total);
 
     const handleSearch = (e) => {
         e.preventDefault();
         if (search.trim()) {
             router.push(`/shop?search=${search.trim()}`);
+            setIsMobileSearchOpen(false); // Close search bar after search
         }
     };
+    
+    // --- Mobile Search Input Component ---
+    const MobileSearchBar = () => (
+        <form
+            onSubmit={handleSearch}
+            className={`sm:hidden absolute top-0 left-0 w-full px-4 py-3 bg-white/95 backdrop-blur z-50 transition-transform duration-300 ${
+                isMobileSearchOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+            } flex items-center gap-2 border-b border-gray-200`}
+        >
+            <button 
+                type="button" 
+                onClick={() => setIsMobileSearchOpen(false)} 
+                className="text-neutral-600 hover:text-black transition p-1"
+            >
+                <MoveLeftIcon size={20} />
+            </button>
+            <input
+                className="flex-1 bg-transparent outline-none placeholder-gray-500 text-lg py-1"
+                type="text"
+                placeholder="Search products or brands..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                autoFocus={isMobileSearchOpen}
+            />
+            {search && (
+                 <button type="submit" className="text-neutral-600 hover:text-black transition p-1">
+                    <Search size={20} />
+                </button>
+            )}
+        </form>
+    );
 
     return (
         <nav className="fixed top-0 left-0 w-full z-40 bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm">
+            
+            {/* NEW: Mobile Search Bar Layer */}
+            <MobileSearchBar />
+
             <div className="mx-auto flex items-center justify-between max-w-7xl px-4 py-3">
                 
-                {/* Logo */}
-                <Link href="/" className="relative text-2xl font-semibold text-neutral-800 tracking-tight select-none">
+                {/* Logo (Hidden when search is open) */}
+                <Link href="/" className={`relative text-2xl font-semibold text-neutral-800 tracking-tight select-none transition ${isMobileSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     <span className="text-green-600">1014</span>gallery<span className="text-green-600 text-3xl align-top">.</span>
                     {hasPlusPlan && (
                         <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-green-500 align-top">
@@ -37,7 +74,7 @@ const Navbar = () => {
                     )}
                 </Link>
 
-                {/* Desktop Nav */}
+                {/* Desktop Nav (Remains the same) */}
                 <div className="hidden sm:flex items-center gap-7 text-neutral-700 font-light">
                     <Link href="/" className="hover:text-black transition">Home</Link>
                     <Link href="/shop" className="hover:text-black transition">Shop</Link>
@@ -96,6 +133,11 @@ const Navbar = () => {
 
                 {/* Mobile Nav */}
                 <div className="sm:hidden flex items-center gap-3">
+                    {/* NEW: Mobile Search Toggle Button */}
+                    <button onClick={() => setIsMobileSearchOpen(true)} className="text-neutral-700 hover:text-black transition p-1">
+                        <Search size={22} />
+                    </button>
+                    
                     <Link href="/favorites">
                         <Heart size={22} className="text-neutral-700" />
                     </Link>
