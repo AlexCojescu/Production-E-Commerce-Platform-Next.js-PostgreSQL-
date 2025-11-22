@@ -9,59 +9,55 @@ const Hero = () => {
 
     return (
         <div className="mx-auto px-4 max-w-6xl">
-            <div className="flex flex-col lg:flex-row gap-6 my-10 md:my-16">
-                
-                {/* 1. Main Archive Section (Larger Panel) */}
-                <div className="flex-1 flex flex-col bg-white border border-neutral-200 rounded-3xl min-h-[300px] shadow-lg transition duration-300 hover:shadow-xl hover:scale-[1.005]">
-                    <div className="p-6 md:p-10">
-                        {/* News/Banner Pill */}
-                        <div className="inline-flex items-center gap-2 bg-neutral-50 pr-3 py-1 rounded-full text-xs text-neutral-500 transition duration-200 hover:bg-neutral-100 cursor-pointer">
-                            <span className="bg-neutral-800 px-2.5 py-1 rounded-full text-white font-medium">NEWS</span>
-                            Free Shipping on Orders Above {currency}50!
+            <div className="flex flex-col lg:flex-row gap-8 my-10 md:my-16">
+                {/* Main Hero Content */}
+                <div className="flex-1 flex flex-col bg-white border border-neutral-200 rounded-3xl min-h-[320px] shadow-lg transition duration-300 hover:shadow-2xl hover:scale-[1.01]">
+                    <div className="p-7 md:p-12">
+                        {/* Authentic Vendors Pill */}
+                        <div className="inline-flex items-center gap-2 bg-neutral-100 pr-3 py-1 rounded-full text-xs text-neutral-700 font-semibold mb-3">
+                            <span className="bg-neutral-900 px-2.5 py-1 rounded-full text-white mr-2">100% AUTHENTIC</span>
+                            Verified Vendors Only
                             <ChevronRightIcon className="ml-1" size={16} />
                         </div>
-                        {/* Title */}
-                        <h2 className="text-4xl md:text-5xl font-light text-neutral-900 mt-6 mb-4 max-w-md leading-tight">
-                            **Archive Clothing, Minimal Styles.**
+                        {/* Bold, Trust-Building Title */}
+                        <h2 className="text-4xl md:text-5xl font-semibold text-neutral-900 mt-3 mb-4 max-w-xl leading-tight">
+                            Buy from Trusted Stores. Connect Direct with Sellers.
                         </h2>
-                        {/* Price Callout */}
-                        <div className="text-neutral-700 text-sm font-medium mt-6">
-                            <p>Starts from</p>
-                            <p className="text-3xl font-bold text-neutral-900">{currency}4.90</p>
+                        {/* Benefit Subhead */}
+                        <p className="text-lg md:text-xl text-neutral-700 font-light max-w-lg mb-6">
+                            Every store is verified, every item ships same day or in 1-2 business days—guaranteed. Message sellers instantly with zero communication restrictions.
+                        </p>
+                        {/* Social Trust Pill */}
+                        <div className="inline-flex items-center gap-2 bg-neutral-50 pr-4 py-1 rounded-full text-xs text-neutral-600 transition hover:bg-neutral-100 cursor-pointer">
+                            <span className="font-medium text-neutral-900">No Scams. No Catch.</span>
+                            Just Creative Community.
                         </div>
-                        {/* CTA Button */}
-                        <button className="bg-neutral-900 text-white text-base py-3 px-8 mt-7 rounded-full font-medium shadow-md transition duration-200 hover:bg-neutral-800 hover:shadow-lg">
-                            SHOP THE COLLECTION
+                        {/* CTA */}
+                        <button className="bg-neutral-900 text-white text-base py-3 px-8 mt-7 rounded-full font-semibold shadow-md transition duration-200 hover:bg-neutral-800 hover:shadow-xl">
+                            SHOP AUTHENTIC PIECES
                         </button>
                     </div>
                 </div>
 
-                {/* 2. Info Panels (Stacked on Mobile, Side-by-Side on Desktop) */}
+                {/* Info Panels */}
                 <div className="flex flex-col gap-6 w-full lg:max-w-xs">
-                    
-                    {/* Panel 1: Best Pieces */}
-                    <div className="flex-1 bg-white border border-neutral-200 rounded-3xl p-6 shadow-sm transition duration-200 hover:shadow-md hover:border-neutral-300 cursor-pointer">
-                        <p className="text-xl font-light text-neutral-900">Best pieces</p>
-                        <button className="flex items-center gap-2 text-neutral-500 mt-2 text-sm hover:text-neutral-900 transition">
-                            View more
-                            <ArrowRightIcon size={16} />
-                        </button>
+                    {/* Verified Seller Guarantee */}
+                    <div className="flex-1 bg-white border border-neutral-200 rounded-3xl p-6 shadow-sm transition hover:shadow-md hover:border-neutral-300 cursor-pointer">
+                        <p className="text-xl font-semibold text-neutral-900 mb-2">Fast Shipping</p>
+                        <p className="text-sm text-neutral-700">Same day or <span className="font-bold">1-2 business days</span>—guaranteed.</p>
                     </div>
 
-                    {/* Panel 2: Season Promotions */}
-                    <div className="flex-1 bg-white border border-neutral-200 rounded-3xl p-6 shadow-sm transition duration-200 hover:shadow-md hover:border-neutral-300 cursor-pointer">
-                        <p className="text-xl font-light text-neutral-900">Season promotions</p>
-                        <button className="flex items-center gap-2 text-neutral-500 mt-2 text-sm hover:text-neutral-900 transition">
-                            View more
-                            <ArrowRightIcon size={16} />
-                        </button>
+                    {/* Direct Communication Panel */}
+                    <div className="flex-1 bg-white border border-neutral-200 rounded-3xl p-6 shadow-sm transition hover:shadow-md hover:border-neutral-300 cursor-pointer">
+                        <p className="text-xl font-semibold text-neutral-900 mb-2">Instant Chat</p>
+                        <p className="text-sm text-neutral-700">Connect direct with sellers, get instant responses, no limits.</p>
                     </div>
 
-                    {/* Panel 3: Seller Dashboard Link (NEW) */}
-                    <Link href="/store" className="flex-1 bg-neutral-900 text-white border border-neutral-900 rounded-3xl p-6 shadow-lg transition duration-200 hover:bg-neutral-800 hover:shadow-xl">
-                        <p className="text-xl font-light">Selling on Archive?</p>
-                        <span className="flex items-center gap-2 mt-2 text-sm font-medium hover:underline">
-                            Visit your Store Dashboard
+                    {/* Seller Dashboard Link */}
+                    <Link href="/create-store" className="flex-1 bg-neutral-900 text-white border border-neutral-900 rounded-3xl p-6 shadow-lg transition hover:bg-neutral-800 hover:shadow-xl">
+                        <p className="text-xl font-semibold mb-1">Become a Verified Seller</p>
+                        <span className="flex items-center gap-2 text-sm font-medium hover:underline">
+                            Go to Seller Dashboard
                             <ArrowRightIcon size={16} />
                         </span>
                     </Link>
