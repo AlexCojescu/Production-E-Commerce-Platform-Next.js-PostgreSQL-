@@ -44,6 +44,7 @@ export default function StoreAddProduct() {
         productCondition: "", 
     })
     const [loading, setLoading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 })
 
     const {getToken} = useAuth()
 
@@ -118,13 +119,13 @@ export default function StoreAddProduct() {
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
-      
+
         try {
           // Check for required fields
           if (!productInfo.clothingType || !productInfo.brand || !productInfo.productCondition) {
             return toast.error('Please complete all category and condition fields.');
           }
-          
+
           if (images.length < 1) {
             return toast.error('Please upload at least one image');
           }
@@ -139,52 +140,92 @@ export default function StoreAddProduct() {
           // ------------------------------------------
 
           setLoading(true);
-      
-          const formData = new FormData();
-          formData.append('name', productInfo.name);
-            formData.append('description', productInfo.description);
-            // Ensure numbers are strings when appended to FormData
-            formData.append('mrp', productInfo.mrp.toString()); 
-            formData.append('price', productInfo.price.toString());
-            
-            formData.append('category', productInfo.clothingType); 
-            formData.append('brand', productInfo.brand);
-            formData.append('condition', productInfo.productCondition); 
+          const token = await getToken();
 
-            images.forEach((image) => {
-                formData.append('images', image);
-            })
+          // Upload images sequentially (one at a time)
+          const imageUrls = [];
+          setUploadProgress({ current: 0, total: images.length });
 
-            const token = await getToken();
-            
-            const { data } = await axios.post('/api/store/product', formData, {
-            headers: { Authorization: `Bearer ${token}` }
-            });
+          for (let i = 0; i < images.length; i++) {
+            setUploadProgress({ current: i + 1, total: images.length });
 
-            toast.success(data.message);
+            const formData = new FormData();
+            formData.append('image', images[i]);
 
-            // reset form
-                setProductInfo({
-                    name: "",
-                    description: "",
-                    mrp: 0,
-                    price: 0,
-                    clothingType: "",
-                    brand: "",
-                    productCondition: "", 
-                    })
-                    setImages([]);
-                    } catch (error) {
-                    toast.error(error?.response?.data?.error || error.message);
-                    } finally {
-                    setLoading(false);
-                    }
+            try {
+              const { data } = await axios.post('/api/store/product/upload-image', formData, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              if (data.success && data.url) {
+                imageUrls.push(data.url);
+              } else {
+                throw new Error(`Failed to upload image ${i + 1}`);
+              }
+            } catch (uploadError) {
+              console.error(`Error uploading image ${i + 1}:`, uploadError);
+              throw new Error(`Failed to upload image ${i + 1}: ${uploadError?.response?.data?.message || uploadError.message}`);
+            }
+          }
+
+          // All images uploaded successfully, now create the product
+          const { data } = await axios.post('/api/store/product', {
+            name: productInfo.name,
+            description: productInfo.description,
+            mrp: productInfo.mrp,
+            price: productInfo.price,
+            category: productInfo.clothingType,
+            brand: productInfo.brand,
+            condition: productInfo.productCondition,
+            imageUrls: imageUrls
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          toast.success(data.message);
+
+          // reset form
+          setProductInfo({
+            name: "",
+            description: "",
+            mrp: 0,
+            price: 0,
+            clothingType: "",
+            brand: "",
+            productCondition: "",
+          })
+          setImages([]);
+          setUploadProgress({ current: 0, total: 0 });
+        } catch (error) {
+          toast.error(error?.response?.data?.error || error.message);
+        } finally {
+          setLoading(false);
+        }
     }
 
 
     return (
-        <form onSubmit={e => toast.promise(onSubmitHandler(e), { loading: "Adding Product..." })} className="text-slate-500 mb-28 p-4 md:p-0">
+        <form onSubmit={onSubmitHandler} className="text-slate-500 mb-28 p-4 md:p-0">
             <h1 className="text-2xl text-slate-500">Add New <span className="text-slate-800 font-medium">Products</span></h1>
+
+            {/* Upload Progress Indicator */}
+            {loading && uploadProgress.total > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium">
+                        Uploading images... {uploadProgress.current} of {uploadProgress.total}
+                    </p>
+                    <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+                        <div
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
+
             <p className="mt-7">Product Images</p>
 
             {/* --- IMAGE UPLOAD UI --- */}
