@@ -1,14 +1,12 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link!
 import { assets } from '@/assets/assets';
 
 const ImageCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // 1. Add buttonHref property for navigation
   const slides = [
     { 
       src: assets.car1, 
@@ -58,30 +56,6 @@ const ImageCarousel = () => {
       buttonText: 'LOGIN',
       buttonHref: '/login'
     },
-    { 
-      src: assets.car7, 
-      alt: 'Slide 7',
-      subtitle: 'PREMIUM QUALITY',
-      title: 'Luxury Pieces',
-      buttonText: 'EXPLORE',
-      buttonHref: '/shop'
-    },
-    { 
-      src: assets.car8, 
-      alt: 'Slide 8',
-      subtitle: 'SALE EVENT',
-      title: 'Up to 50% Off',
-      buttonText: 'SHOP SALE',
-      buttonHref: '/shop'
-    },
-    { 
-      src: assets.car9, 
-      alt: 'Slide 9',
-      subtitle: 'FINAL PIECES',
-      title: 'Last Chance',
-      buttonText: 'SHOP NOW',
-      buttonHref: '/shop'
-    },
   ];
 
   const nextSlide = useCallback(() => {
@@ -118,6 +92,7 @@ const ImageCarousel = () => {
 
   // Get the actual index for rendering (loops infinitely)
   const getSlideIndex = (index) => {
+    
     return ((index % slides.length) + slides.length) % slides.length;
   };
 
@@ -170,12 +145,9 @@ const ImageCarousel = () => {
                   <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-5 md:mb-8 leading-tight tracking-tight">
                     {slide.title}
                   </h1>
-                  {/* 3. Use Link to wrap the button */}
-                  <Link href={slide.buttonHref} passHref>
-                    <button className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0">
-                      {slide.buttonText}
-                    </button>
-                  </Link>
+                  <button className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0">
+                    {slide.buttonText}
+                  </button>
                 </div>
               </div>
             );
