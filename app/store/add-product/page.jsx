@@ -1,6 +1,6 @@
 'use client'
 import { assets } from "@/assets/assets"
-import Image from "next/image"
+import NextImage from "next/image" // FIXED: Renamed to NextImage to avoid native Image constructor conflict
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 import axios from "axios"
@@ -32,6 +32,7 @@ export default function StoreAddProduct() {
 
     const [images, setImages] = useState([])
     const MAX_IMAGES = 10; // Set maximum limit for photos
+    const [imageProcessing, setImageProcessing] = useState(false) // State kept, though compression logic is removed
 
     const [productInfo, setProductInfo] = useState({
         name: "",
@@ -61,21 +62,52 @@ export default function StoreAddProduct() {
     }
     // -------------------------------------------------------------------
     
+    // --- Image Compression Helper ---
+    // NOTE: This function is completely removed as per your request to rely on server-side optimization
+    // -------------------------------------------------------------------
+
     // --- Image Handlers ---
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const newFiles = Array.from(e.target.files);
-        
+
+        if (newFiles.length === 0) return;
+
+        setImageProcessing(true);
+
+        // Track the result of the state update
+        let maxLimitExceeded = false;
+        let filesAdded = 0; 
+
         setImages(prevImages => {
             const totalFiles = [...prevImages, ...newFiles];
-            
+            let filesToReturn = totalFiles;
+
             if (totalFiles.length > MAX_IMAGES) {
-                toast.error(`You can upload a maximum of ${MAX_IMAGES} images.`);
-                return totalFiles.slice(0, MAX_IMAGES);
+                // 1. Set the flag to true instead of calling toast.error
+                maxLimitExceeded = true;
+                filesToReturn = totalFiles.slice(0, MAX_IMAGES);
             }
-            return totalFiles;
+            
+            // Calculate how many were successfully added/kept
+            filesAdded = filesToReturn.length - prevImages.length; 
+
+            return filesToReturn;
         });
-        
-        e.target.value = null; 
+
+        // 2. Run both side effects (toasts) outside the state setter
+
+        if (maxLimitExceeded) {
+            toast.error(`You can upload a maximum of ${MAX_IMAGES} images.`);
+        }
+
+        if (filesAdded > 0 && !maxLimitExceeded) {
+            // Only show success if files were added AND we didn't show the max limit error.
+            // We can simplify this: if files were added, show success. The error will handle the other case.
+            toast.success(`${filesAdded} image(s) added.`);
+        }
+
+        setImageProcessing(false);
+        e.target.value = null;
     };
 
     const handleRemoveImage = (indexToRemove) => {
@@ -185,17 +217,19 @@ export default function StoreAddProduct() {
                         htmlFor="imageUpload" 
                         className="h-24 w-24 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-slate-500 transition"
                     >
-                        <Image width={30} height={30} src={assets.upload_area} alt="Upload" />
+                        {/* FIXED: Using NextImage component */}
+                        <NextImage width={30} height={30} src={assets.upload_area} alt="Upload" /> 
                         <p className="text-xs mt-1 text-slate-500 text-center font-medium px-1">
                             {images.length > 0 ? `+ Add More (${MAX_IMAGES - images.length} left)` : 'Upload Photos'}
                         </p>
-                        <input 
-                            type="file" 
-                            accept='image/*' 
-                            id="imageUpload" 
-                            onChange={handleImageChange} 
+                        <input
+                            type="file"
+                            accept='image/*'
+                            id="imageUpload"
+                            onChange={handleImageChange}
                             multiple
-                            hidden 
+                            disabled={imageProcessing || loading}
+                            hidden
                         />
                     </label>
                 )}

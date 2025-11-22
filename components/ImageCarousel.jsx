@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // <-- Added Link for navigation
 import { assets } from '@/assets/assets';
 
 const ImageCarousel = () => {
@@ -145,9 +146,14 @@ const ImageCarousel = () => {
                   <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-5 md:mb-8 leading-tight tracking-tight">
                     {slide.title}
                   </h1>
-                  <button className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0">
+                  
+                  {/* The FIX: Use Next.js <Link> for proper routing */}
+                  <Link 
+                    href={slide.buttonHref}
+                    className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0"
+                  >
                     {slide.buttonText}
-                  </button>
+                  </Link>
                 </div>
               </div>
             );
