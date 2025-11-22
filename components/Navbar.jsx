@@ -64,11 +64,11 @@ const Navbar = () => {
 
             <div className="mx-auto flex items-center justify-between max-w-7xl px-4 py-3">
                 
-                {/* Logo (Hidden when search is open) */}
+                {/* Logo (Updated Text and Color) */}
                 <Link href="/" className={`relative text-2xl font-semibold text-neutral-800 tracking-tight select-none transition ${isMobileSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <span className="text-green-600">1014</span>gallery<span className="text-green-600 text-3xl align-top">.</span>
+                    <span className="text-neutral-600">vette</span>clothing<span className="text-neutral-600 text-3xl align-top">.</span>
                     {hasPlusPlan && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-green-500 align-top">
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-neutral-600 align-top">
                             plus
                         </span>
                     )}

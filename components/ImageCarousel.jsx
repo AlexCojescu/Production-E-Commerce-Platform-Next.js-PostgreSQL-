@@ -1,75 +1,86 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Import Link!
 import { assets } from '@/assets/assets';
 
 const ImageCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
+  // 1. Add buttonHref property for navigation
   const slides = [
     { 
       src: assets.car1, 
       alt: 'Slide 1',
       subtitle: 'RICK OWENS, Vetements, + MORE',
       title: 'Trending Denim + Pants',
-      buttonText: 'SHOP NOW'
+      buttonText: 'SHOP NOW',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car2, 
       alt: 'Slide 2',
       subtitle: 'NEW COLLECTION',
       title: 'Footware Favorites',
-      buttonText: 'EXPLORE'
+      buttonText: 'EXPLORE',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car3, 
       alt: 'Slide 3',
       subtitle: 'EXCLUSIVE DROPS',
       title: 'Limited Edition',
-      buttonText: 'VIEW MORE'
+      buttonText: 'VIEW MORE',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car4, 
       alt: 'Slide 4',
       subtitle: 'TRENDING NOW',
       title: 'Street Style',
-      buttonText: 'SHOP NOW'
+      buttonText: 'CREATE STORE',
+      buttonHref: '/create-store'
     },
     { 
       src: assets.car5, 
       alt: 'Slide 5',
       subtitle: 'BEST SELLERS',
       title: 'Customer Favorites',
-      buttonText: 'DISCOVER'
+      buttonText: 'DISCOVER',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car6, 
       alt: 'Slide 6',
       subtitle: 'SPRING COLLECTION',
       title: 'Fresh Arrivals',
-      buttonText: 'SHOP NOW'
+      buttonText: 'LOGIN',
+      buttonHref: '/login'
     },
     { 
       src: assets.car7, 
       alt: 'Slide 7',
       subtitle: 'PREMIUM QUALITY',
       title: 'Luxury Pieces',
-      buttonText: 'EXPLORE'
+      buttonText: 'EXPLORE',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car8, 
       alt: 'Slide 8',
       subtitle: 'SALE EVENT',
       title: 'Up to 50% Off',
-      buttonText: 'SHOP SALE'
+      buttonText: 'SHOP SALE',
+      buttonHref: '/shop'
     },
     { 
       src: assets.car9, 
       alt: 'Slide 9',
       subtitle: 'FINAL PIECES',
       title: 'Last Chance',
-      buttonText: 'SHOP NOW'
+      buttonText: 'SHOP NOW',
+      buttonHref: '/shop'
     },
   ];
 
@@ -159,9 +170,12 @@ const ImageCarousel = () => {
                   <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-5 md:mb-8 leading-tight tracking-tight">
                     {slide.title}
                   </h1>
-                  <button className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0">
-                    {slide.buttonText}
-                  </button>
+                  {/* 3. Use Link to wrap the button */}
+                  <Link href={slide.buttonHref} passHref>
+                    <button className="inline-block px-7 sm:px-8 md:px-10 py-2.5 md:py-3.5 bg-transparent text-white border-2 border-white text-[0.75rem] sm:text-[0.8125rem] md:text-[0.875rem] font-semibold tracking-[1.5px] uppercase cursor-pointer transition-all hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0">
+                      {slide.buttonText}
+                    </button>
+                  </Link>
                 </div>
               </div>
             );
