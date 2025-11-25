@@ -5,25 +5,33 @@ import Image from "next/image"
 import Loading from "@/components/Loading"
 import { useAuth, useUser } from "@clerk/nextjs"
 import axios from "axios"
+import { useRouter } from "next/navigation"
+import { PencilIcon, Heart } from "lucide-react"
+
 
 export default function StoreManageProducts() {
-
     const { getToken } = useAuth()
     const { user } = useUser()
+    const router = useRouter()
+
 
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
+
     const [loading, setLoading] = useState(true)
     const [products, setProducts] = useState([])
 
+
     const fetchProducts = async () => {
+
 
         try {
             const token = await getToken()
             const { data } = await axios.get('/api/store/product', {headers: {
               Authorization: `Bearer ${token}`
             }})
+
 
             // Only show products that are in stock
             const inStockProducts = data.products.filter(product => product.inStock)
@@ -33,7 +41,9 @@ export default function StoreManageProducts() {
           }
           setLoading(false)
 
+
     }
+
 
     const toggleStock = async (productId) => {
         try {
@@ -41,8 +51,10 @@ export default function StoreManageProducts() {
             const { data } = await axios.post('/api/store/stock-toggle', { productId },
                 { headers: { Authorization: `Bearer ${token}` } })
 
+
             // Remove the product from the view when toggled to out of stock
             setProducts(prevProducts => prevProducts.filter(product => product.id !== productId))
+
 
             toast.success(data.message)
         } catch (error) {
@@ -50,13 +62,16 @@ export default function StoreManageProducts() {
         }
     }
 
+
     useEffect(() => {
         if(user){
             fetchProducts()
         }         
     }, [user])
 
+
     if (loading) return <Loading />
+
 
     return (
         <>
@@ -68,6 +83,7 @@ export default function StoreManageProducts() {
                         <th className="px-4 py-3 hidden md:table-cell">Condition</th> 
                         <th className="px-4 py-3 hidden md:table-cell">MRP</th>
                         <th className="px-4 py-3">Price</th>
+                        <th className="px-4 py-3 text-center">Likes</th>
                         <th className="px-4 py-3">Actions</th></tr>
                 </thead>
                 <tbody className="text-slate-700">
@@ -95,11 +111,26 @@ export default function StoreManageProducts() {
                             <td className="px-4 py-3 hidden md:table-cell">{currency} {product.mrp.toLocaleString()}</td>
                             <td className="px-4 py-3">{currency} {product.price.toLocaleString()}</td>
                             <td className="px-4 py-3 text-center">
-                                <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
-                                    <input type="checkbox" className="sr-only peer" onChange={() => toast.promise(toggleStock(product.id), { loading: "Updating data..." })} checked={product.inStock} />
-                                    <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200"></div>
-                                    <span className="dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4"></span>
-                                </label>
+                                <div className="flex items-center justify-center gap-1.5 text-slate-600">
+                                    <Heart size={16} className="text-red-500 fill-red-500" />
+                                    <span className="text-sm font-medium">{product.favoriteCount || 0}</span>
+                                </div>
+                            </td>
+                            <td className="px-4 py-3">
+                                <div className="flex items-center gap-3 justify-center">
+                                    <button
+                                        onClick={() => router.push(`/store/edit-product/${product.id}`)}
+                                        className="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition"
+                                        title="Edit Product"
+                                    >
+                                        <PencilIcon size={18} />
+                                    </button>
+                                    <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
+                                        <input type="checkbox" className="sr-only peer" onChange={() => toast.promise(toggleStock(product.id), { loading: "Updating data..." })} checked={product.inStock} />
+                                        <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200"></div>
+                                        <span className="dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4"></span>
+                                    </label>
+                                </div>
                             </td>
                         </tr>
                     ))}

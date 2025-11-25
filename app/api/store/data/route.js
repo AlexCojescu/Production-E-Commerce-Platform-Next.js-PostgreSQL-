@@ -17,7 +17,12 @@ export async function GET(request) {
       // Get store info and inStock products with ratings
       const store = await prisma.store.findUnique({
         where: {username, isActive: true},
-        include: {Product: {include: {rating: true}}}
+        include: {
+          Product: {
+            where: { inStock: true },
+            include: { rating: true }
+          }
+        }
       })
   
       if (!store) {

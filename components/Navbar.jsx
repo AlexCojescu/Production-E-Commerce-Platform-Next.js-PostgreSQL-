@@ -79,6 +79,7 @@ const Navbar = () => {
                     <Link href="/" className="hover:text-black transition">Home</Link>
                     <Link href="/shop" className="hover:text-black transition">Shop</Link>
                     <Link href="/create-store" className="hover:text-black transition">Sell</Link>
+                    <Link href="/store" className="hover:text-black transition">Store</Link>
 
                     <form
                         onSubmit={handleSearch}

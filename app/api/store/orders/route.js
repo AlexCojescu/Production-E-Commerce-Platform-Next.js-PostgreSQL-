@@ -8,6 +8,12 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const { userId } = getAuth(request);
+    
+    // Check if user is authenticated before proceeding
+    if (!userId) {
+      return NextResponse.json({ error: 'not authorized' }, { status: 401 });
+    }
+
     const storeId = await authSeller(userId);
 
     if (!storeId) {
@@ -31,6 +37,12 @@ export async function POST(request) {
 export async function GET(request) {
     try {
       const { userId } = getAuth(request);
+      
+      // Check if user is authenticated before proceeding
+      if (!userId) {
+        return NextResponse.json({ error: 'not authorized' }, { status: 401 });
+      }
+
       const storeId = await authSeller(userId);
   
       if (!storeId) {

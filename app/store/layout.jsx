@@ -2,8 +2,8 @@ import StoreLayout from "@/components/store/StoreLayout";
 import {SignedIn, SignedOut, SignIn} from "@clerk/nextjs"
 
 export const metadata = {
-    title: "GoCart. - Store Dashboard",
-    description: "GoCart. - Store Dashboard",
+  title: "VetteClothing. - Rare For The Low",
+  description: "VetteClothing. - Rare For The Low",
 };
 
 
