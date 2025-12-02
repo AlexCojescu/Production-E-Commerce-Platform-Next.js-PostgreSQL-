@@ -20,7 +20,8 @@ import { useSelector } from "react-redux"
         category: [],
         brand: [],
         condition: [],
-        priceRange: null
+        priceRange: null,
+        sold: []
     })
     const [sortBy, setSortBy] = useState('newest')
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
@@ -57,11 +58,29 @@ import { useSelector } from "react-redux"
             }
         }
 
+        // Sold filter
+        if (filters.sold && filters.sold.length > 0) {
+            const productSold = product.sold || false
+            if (!filters.sold.includes(productSold)) {
+                return false
+            }
+        }
+
         return true
     })
 
-    // Apply sorting
+    // Apply sorting - sold items always at the bottom
     const sortedProducts = [...filteredProducts].sort((a, b) => {
+        // First, separate sold and non-sold items
+        const aSold = a.sold || false
+        const bSold = b.sold || false
+        
+        // If one is sold and the other isn't, non-sold comes first
+        if (aSold !== bSold) {
+            return aSold ? 1 : -1
+        }
+        
+        // If both have the same sold status, apply the selected sort
         switch (sortBy) {
             case 'price-low':
                 return a.price - b.price
@@ -86,7 +105,8 @@ import { useSelector } from "react-redux"
             category: [],
             brand: [],
             condition: [],
-            priceRange: null
+            priceRange: null,
+            sold: []
         })
     }
 
@@ -96,7 +116,8 @@ import { useSelector } from "react-redux"
 
     // Count active filters
     const activeFilterCount = filters.category.length + filters.brand.length +
-                              filters.condition.length + (filters.priceRange ? 1 : 0)
+                              filters.condition.length + (filters.priceRange ? 1 : 0) +
+                              filters.sold.length
 
     return (
         <div className="min-h-[70vh] mx-6 my-10">

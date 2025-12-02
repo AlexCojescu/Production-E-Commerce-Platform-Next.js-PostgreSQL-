@@ -12,7 +12,7 @@ export default function StoreAddProduct() {
         "Tops", "Bottoms", "Outerwear", "Dresses", "Footwear", "Accessories"
     ];
     const clothingBrands = [
-        "Balenciaga", "Vetements", "Rick Owens", "ERD (Enfants Riches Déprimés)", "Gucci", "Prada", "Acne Studios", "Other"
+        "Balenciaga", "Vetements", "Rick Owens", "ERD (Enfants Riches Déprimés)", "Gucci", "Prada", "Acne Studios", "Chrome Hearts", "Other"
     ];
     const conditionOptions = [
         "New with Tags (NWT)",
@@ -21,6 +21,9 @@ export default function StoreAddProduct() {
         "Very Good (Pre-owned)",
         "Good (Pre-owned)",
         "Distressed / Vintage"
+    ];
+    const sizeOptions = [
+        "XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"
     ];
 
     const [images, setImages] = useState([])
@@ -34,6 +37,7 @@ export default function StoreAddProduct() {
         clothingType: "",
         brand: "",
         productCondition: "",
+        size: "",
     })
     const [loading, setLoading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 })
@@ -80,8 +84,8 @@ export default function StoreAddProduct() {
     const onSubmitHandler = async (e) => {
         e.preventDefault()
         try {
-            if (!productInfo.clothingType || !productInfo.brand || !productInfo.productCondition)
-                return toast.error('Please complete all category and condition fields.')
+            if (!productInfo.clothingType || !productInfo.brand || !productInfo.productCondition || !productInfo.size)
+                return toast.error('Please complete all category, condition, and size fields.')
             if (images.length < 1)
                 return toast.error('Please upload at least one image')
             if (productInfo.mrp === 0)
@@ -117,6 +121,7 @@ export default function StoreAddProduct() {
                 category: productInfo.clothingType,
                 brand: productInfo.brand,
                 condition: productInfo.productCondition,
+                size: productInfo.size,
                 imageUrls: imageUrls
             }, {
                 headers: {
@@ -134,6 +139,7 @@ export default function StoreAddProduct() {
                 clothingType: "",
                 brand: "",
                 productCondition: "",
+                size: "",
             })
             setImages([])
             setUploadProgress({ current: 0, total: 0 })
@@ -254,6 +260,15 @@ export default function StoreAddProduct() {
             >
                 <option value="">Select Condition</option>
                 {conditionOptions.map(condition => <option key={condition} value={condition}>{condition}</option>)}
+            </select>
+
+            <select
+                onChange={e => setProductInfo({ ...productInfo, size: e.target.value })}
+                value={productInfo.size}
+                className="w-full p-2 px-3 mt-3 outline-none border border-slate-200 rounded" required
+            >
+                <option value="">Select Size</option>
+                {sizeOptions.map(size => <option key={size} value={size}>{size}</option>)}
             </select>
 
             <button disabled={loading}

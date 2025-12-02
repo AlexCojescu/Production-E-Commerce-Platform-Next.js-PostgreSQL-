@@ -26,13 +26,13 @@ export async function POST(request) {
 
     // Get the data from the request body (now JSON instead of FormData)
     const body = await request.json()
-    const { name, description, mrp, price, category, brand, condition, imageUrls } = body
+    const { name, description, mrp, price, category, brand, condition, size, imageUrls } = body
 
     // Convert to numbers for validation
     const mrpNum = Number(mrp)
     const priceNum = Number(price)
 
-    if (!name || !description || !mrpNum || !priceNum || !category || !brand || !condition || !imageUrls || imageUrls.length < 1) {
+    if (!name || !description || !mrpNum || !priceNum || !category || !brand || !condition || !size || !imageUrls || imageUrls.length < 1) {
         return NextResponse.json({ error: 'Missing required product details.' }, { status: 400 })
       }
 
@@ -55,6 +55,7 @@ export async function POST(request) {
                 category,
                 brand,
                 condition,
+                size,
                 images: imageUrls,
                 storeId
             }
@@ -161,7 +162,7 @@ export async function PUT(request) {
         }
 
         const body = await request.json()
-        const { productId, name, description, mrp, price, category, brand, condition, imageUrls } = body
+        const { productId, name, description, mrp, price, category, brand, condition, size, imageUrls } = body
 
         if (!productId) {
             return NextResponse.json({ error: 'Product ID is required' }, { status: 400 })
@@ -183,7 +184,7 @@ export async function PUT(request) {
         const mrpNum = Number(mrp)
         const priceNum = Number(price)
 
-        if (!name || !description || !mrpNum || !priceNum || !category || !brand || !condition || !imageUrls || imageUrls.length < 1) {
+        if (!name || !description || !mrpNum || !priceNum || !category || !brand || !condition || !size || !imageUrls || imageUrls.length < 1) {
             return NextResponse.json({ error: 'Missing required product details.' }, { status: 400 })
         }
 
@@ -208,6 +209,7 @@ export async function PUT(request) {
                 category,
                 brand,
                 condition,
+                size,
                 images: imageUrls,
             }
         })

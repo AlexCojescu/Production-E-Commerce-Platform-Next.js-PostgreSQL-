@@ -1,19 +1,18 @@
 'use client'
-import ProductDescription from "@/components/ProductDescription";
-import ProductDetails from "@/components/ProductDetails";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import ProductDescription from "@/components/ProductDescription"
+import ProductDetails from "@/components/ProductDetails"
+import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
 
 export default function Product() {
-
-    const { productId } = useParams();
-    const [product, setProduct] = useState();
-    const products = useSelector(state => state.product.list);
+    const { productId } = useParams()
+    const [product, setProduct] = useState()
+    const products = useSelector(state => state.product.list)
 
     const fetchProduct = async () => {
-        const product = products.find((product) => product.id === productId);
-        setProduct(product);
+        const found = products.find((p) => p.id === productId)
+        setProduct(found)
     }
 
     useEffect(() => {
@@ -21,23 +20,26 @@ export default function Product() {
             fetchProduct()
         }
         scrollTo(0, 0)
-    }, [productId,products]);
+    }, [productId, products])
 
     return (
-        <div className="mx-6">
-            <div className="max-w-7xl mx-auto">
-
-                {/* Breadcrums */}
-                <div className="  text-gray-600 text-sm mt-8 mb-5">
-                    Home / Products / {product?.category}
+        <div className="bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                {/* Breadcrumbs */}
+                <div className="text-xs sm:text-sm text-neutral-400 mt-6 mb-6">
+                    Home / Products / <span className="text-neutral-600">{product?.category}</span>
                 </div>
 
                 {/* Product Details */}
-                {product && (<ProductDetails product={product} />)}
+                {product && <ProductDetails product={product} />}
 
-                {/* Description & Reviews */}
-                {product && (<ProductDescription product={product} />)}
+                {/* Description */}
+                {product && (
+                    <div className="mt-14 mb-24 border-t border-neutral-200 pt-10">
+                        <ProductDescription product={product} />
+                    </div>
+                )}
             </div>
         </div>
-    );
+    )
 }

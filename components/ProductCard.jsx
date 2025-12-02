@@ -38,11 +38,22 @@ const ProductCard = ({ product }) => {
                 <img
                     width={800}
                     height={1000}
-                    className='w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-330'
+                    className={`w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-330 ${
+                        product.sold ? 'brightness-50' : ''
+                    }`}
                     src={product.images && product.images[0]}
                     alt={product.name}
                     loading="lazy"
                 />
+
+                {/* SOLD Overlay - Only shown in shop view (not product detail) */}
+                {product.sold && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                        <span className="bg-black/80 text-white font-bold text-xl px-6 py-3 rounded-lg tracking-wider uppercase">
+                            SOLD
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* 2. Text Content - Structured Hierarchy */}

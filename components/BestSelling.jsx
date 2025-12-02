@@ -7,13 +7,19 @@ const BestSelling = () => {
 
     const displayQuantity = 8
     const products = useSelector(state => state.product.list)
+    
+    // Filter out sold items and sort by rating count
+    const availableProducts = products
+        .filter(product => !product.sold)
+        .sort((a, b) => (b.rating?.length || 0) - (a.rating?.length || 0))
+        .slice(0, displayQuantity)
 
     return (
         <div className='px-6 my-30 max-w-6xl mx-auto'>
-            <Title title='Best Selling' description={`Showing ${products.length < displayQuantity ? products.length : displayQuantity} of ${products.length} products`} href='/shop' />
+            <Title title='Best Selling' description={`Showing ${availableProducts.length} of ${products.filter(p => !p.sold).length} available products`} href='/shop' />
             <div className='mt-12  grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12'>
-                {products.slice().sort((a, b) => b.rating.length - a.rating.length).slice(0, displayQuantity).map((product, index) => (
-                    <ProductCard key={index} product={product} />
+                {availableProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
                 ))}
             </div>
         </div>

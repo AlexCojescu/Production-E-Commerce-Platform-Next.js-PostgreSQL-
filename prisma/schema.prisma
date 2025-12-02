@@ -36,7 +36,9 @@ model Product {
     category    String
     brand       String   @default("N/A")
     condition   String   @default("N/A")
+    size        String   @default("N/A")
     inStock     Boolean  @default(true)
+    sold        Boolean  @default(false)
     storeId     String
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt

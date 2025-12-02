@@ -6,7 +6,12 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
         try {
             let products = await prisma.product.findMany({
-                where: {inStock: true },
+                where: {
+                    OR: [
+                        { inStock: true },
+                        { sold: true }
+                    ]
+                },
                 include: {
                 rating: {
                     select: {
@@ -15,12 +20,24 @@ export async function GET(request) {
                     }
                 },
                 store: true,
+                _count: {
+                    select: {
+                        favoritedBy: true
+                    }
+                }
             },
         orderBy: { createdAt: 'desc' }
       })
-  
-    // remove products with store isActive false
-    products = products.filter(product => product.store.isActive)
+
+    // remove products with store isActive false and add favoriteCount
+    products = products
+        .filter(product => product.store.isActive)
+        .map(product => ({
+            ...product,
+            favoriteCount: product._count.favoritedBy
+        }))
+        .map(({ _count, ...product }) => product)
+
     return NextResponse.json({products})
 } catch (error) {
     console.error(error);

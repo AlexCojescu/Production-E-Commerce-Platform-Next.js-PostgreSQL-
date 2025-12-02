@@ -28,6 +28,9 @@ export default function StoreEditProduct() {
         "Good (Pre-owned)",
         "Distressed / Vintage"
     ]
+    const sizeOptions = [
+        "XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size"
+    ]
 
     const [images, setImages] = useState([]) // New File objects
     const [existingImages, setExistingImages] = useState([]) // Existing URLs
@@ -42,6 +45,7 @@ export default function StoreEditProduct() {
         clothingType: "",
         brand: "",
         productCondition: "",
+        size: "",
     })
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
@@ -74,6 +78,7 @@ export default function StoreEditProduct() {
                     clothingType: product.category,
                     brand: product.brand,
                     productCondition: product.condition,
+                    size: product.size || "",
                 })
                 setExistingImages(product.images || [])
             } else {
@@ -146,8 +151,8 @@ export default function StoreEditProduct() {
         e.preventDefault()
 
         try {
-            if (!productInfo.clothingType || !productInfo.brand || !productInfo.productCondition) {
-                return toast.error('Please complete all category and condition fields.')
+            if (!productInfo.clothingType || !productInfo.brand || !productInfo.productCondition || !productInfo.size) {
+                return toast.error('Please complete all category, condition, and size fields.')
             }
 
             const totalImageCount = existingImages.length + images.length
@@ -205,6 +210,7 @@ export default function StoreEditProduct() {
                 category: productInfo.clothingType,
                 brand: productInfo.brand,
                 condition: productInfo.productCondition,
+                size: productInfo.size,
                 imageUrls: allImageUrls
             }, {
                 headers: {
@@ -363,6 +369,15 @@ export default function StoreEditProduct() {
             >
                 <option value="">Select Condition</option>
                 {conditionOptions.map(condition => <option key={condition} value={condition}>{condition}</option>)}
+            </select>
+
+            <select
+                onChange={e => setProductInfo({ ...productInfo, size: e.target.value })}
+                value={productInfo.size}
+                className="w-full p-2 px-3 mt-3 outline-none border border-slate-200 rounded" required
+            >
+                <option value="">Select Size</option>
+                {sizeOptions.map(size => <option key={size} value={size}>{size}</option>)}
             </select>
 
             <div className="flex gap-3 mt-6">
