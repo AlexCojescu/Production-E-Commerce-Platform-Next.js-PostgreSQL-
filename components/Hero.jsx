@@ -33,9 +33,11 @@ const Hero = () => {
                             Just Creative Community.
                         </div>
                         {/* CTA */}
-                        <button className="bg-neutral-900 text-white text-base py-3 px-8 mt-7 rounded-full font-semibold shadow-md transition duration-200 hover:bg-neutral-800 hover:shadow-xl">
-                            SHOP AUTHENTIC PIECES
-                        </button>
+                        <Link href="/shop">
+                            <button className="bg-neutral-900 text-white text-base py-3 px-8 mt-7 rounded-full font-semibold shadow-md transition duration-200 hover:bg-neutral-800 hover:shadow-xl">
+                                SHOP AUTHENTIC PIECES
+                            </button>
+                        </Link>
                     </div>
                 </div>
 
