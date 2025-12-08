@@ -8,7 +8,17 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const { userId } = getAuth(request)
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
     const { cart } = await request.json()
+
+    // Validate cart is an object
+    if (!cart || typeof cart !== 'object' || Array.isArray(cart)) {
+      return NextResponse.json({ error: 'Invalid cart format' }, { status: 400 })
+    }
 
     // Save the cart to the user object
     await prisma.user.update({
@@ -18,9 +28,8 @@ export async function POST(request) {
 
     return NextResponse.json({ message: 'Cart updated' })
   } catch (error) {
-    // Catch block logic would go here
-    console.error(error);
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    console.error('Cart update error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update cart' }, { status: 400 })
   }
 }
 

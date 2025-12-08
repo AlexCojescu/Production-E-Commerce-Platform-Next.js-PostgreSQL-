@@ -20,7 +20,11 @@ const ProductDetails = ({ product }) => {
     const favoriteCount = product.favoriteCount || 0
 
     const addToCartHandler = () => {
-        dispatch(addToCart({ productId }))
+        // Prevent adding sold items to cart
+        if (product.sold) {
+            return
+        }
+        dispatch(addToCart({ productId, product }))
     }
 
     const discount = product.mrp
@@ -148,20 +152,29 @@ const ProductDetails = ({ product }) => {
 
                 {/* Cart / Quantity */}
                 <div className="flex flex-wrap items-end gap-6 mt-10">
-                    {cart[productId] && (
+                    {!product.sold && cart[productId] && (
                         <div className="flex flex-col gap-2">
                             <p className="text-sm font-medium text-neutral-800">
                                 Quantity
                             </p>
-                            <Counter productId={productId} />
+                            <Counter productId={productId} product={product} />
                         </div>
                     )}
-                    <button
-                        onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')}
-                        className="bg-neutral-900 text-white px-10 py-3 text-sm font-medium rounded-full hover:bg-neutral-800 active:scale-[0.98] transition"
-                    >
-                        {!cart[productId] ? 'Add to Cart' : 'View Cart'}
-                    </button>
+                    {product.sold ? (
+                        <button
+                            disabled
+                            className="bg-gray-400 text-white px-10 py-3 text-sm font-medium rounded-full cursor-not-allowed"
+                        >
+                            Sold Out
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')}
+                            className="bg-neutral-900 text-white px-10 py-3 text-sm font-medium rounded-full hover:bg-neutral-800 active:scale-[0.98] transition"
+                        >
+                            {!cart[productId] ? 'Add to Cart' : 'View Cart'}
+                        </button>
+                    )}
                 </div>
 
                 <hr className="border-neutral-200 my-8" />

@@ -67,19 +67,38 @@ export default function Cart() {
                         <tbody>
                             {
                                 cartArray.map((item, index) => (
-                                    <tr key={index} className="space-x-2">
+                                    <tr key={index} className={`space-x-2 ${item.sold ? 'opacity-60' : ''}`}>
                                         <td className="flex gap-3 my-4">
-                                            <div className="flex gap-3 items-center justify-center bg-slate-100 size-18 rounded-md">
+                                            <div className={`flex gap-3 items-center justify-center bg-slate-100 size-18 rounded-md ${item.sold ? 'opacity-50' : ''}`}>
                                                 <Image src={item.images[0]} className="h-14 w-auto" alt="" width={45} height={45} />
                                             </div>
                                             <div>
-                                                <p className="max-sm:text-sm">{item.name}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className={`max-sm:text-sm ${item.sold ? 'line-through' : ''}`}>{item.name}</p>
+                                                    {item.sold && (
+                                                        <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full uppercase">
+                                                            SOLD
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-xs text-slate-500">{item.category}</p>
                                                 <p>{currency}{item.price}</p>
                                             </div>
                                         </td>
                                         <td className="text-center">
-                                            <Counter productId={item.id} />
+                                            {item.sold ? (
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-xs text-red-600 font-medium">SOLD</span>
+                                                    <button 
+                                                        onClick={() => handleDeleteItemFromCart(item.id)}
+                                                        className="text-xs text-red-500 hover:underline"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <Counter productId={item.id} product={item} />
+                                            )}
                                         </td>
                                         <td className="text-center">{currency}{(item.price * item.quantity).toLocaleString()}</td>
                                         <td className="text-center max-md:hidden">
