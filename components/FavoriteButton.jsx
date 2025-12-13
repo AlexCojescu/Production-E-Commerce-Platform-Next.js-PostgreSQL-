@@ -6,7 +6,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
-export default function FavoriteButton({ productId, initialIsFavorited = false, size = 20 }) {
+export default function FavoriteButton({ productId, initialIsFavorited = false, size = 20, variant = 'default' }) {
   const { getToken, userId } = useAuth()
   const router = useRouter()
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited)
@@ -43,17 +43,23 @@ export default function FavoriteButton({ productId, initialIsFavorited = false, 
     }
   }
 
+  const isInline = variant === 'inline'
+  
   return (
     <button
       onClick={toggleFavorite}
       disabled={isLoading}
       className={`
-        p-2 rounded-full transition-all duration-200 backdrop-blur-sm
-        ${isFavorited
-          ? 'bg-white/90 hover:bg-white shadow-md'
-          : 'bg-white/70 hover:bg-white/90 shadow-sm'
+        transition-all duration-200
+        ${isInline
+          ? 'p-1 hover:opacity-70'
+          : 'p-2 rounded-full backdrop-blur-sm ' +
+            (isFavorited
+              ? 'bg-white/90 hover:bg-white shadow-md'
+              : 'bg-white/70 hover:bg-white/90 shadow-sm'
+            ) +
+            (isLoading ? ' opacity-50 cursor-not-allowed' : ' hover:shadow-lg')
         }
-        ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}
       `}
       aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
     >

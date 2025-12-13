@@ -152,14 +152,6 @@ const ProductDetails = ({ product }) => {
 
                 {/* Cart / Quantity */}
                 <div className="flex flex-wrap items-end gap-6 mt-10">
-                    {!product.sold && cart[productId] && (
-                        <div className="flex flex-col gap-2">
-                            <p className="text-sm font-medium text-neutral-800">
-                                Quantity
-                            </p>
-                            <Counter productId={productId} product={product} />
-                        </div>
-                    )}
                     {product.sold ? (
                         <button
                             disabled
