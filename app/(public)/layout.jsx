@@ -42,7 +42,7 @@ export default function PublicLayout({ children }) {
     return (
         <>
             <Navbar />
-            <main className="pt-16">{children}</main>
+            <main className="pt-16 overflow-x-hidden">{children}</main>
             <Footer />
         </>
     );

@@ -14,7 +14,7 @@ const ProductCard = ({ product }) => {
         // Replaced next/link with standard <a> tag
         <a
             href={`/product/${product.id}`}
-            className='group block w-full max-w-xs mx-auto transition duration-300 hover:shadow-xl hover:scale-[1.01] rounded-lg overflow-hidden bg-white'
+            className='group block w-full transition duration-300 hover:shadow-xl hover:scale-[1.01] rounded-lg overflow-hidden bg-white'
         >
             {/* 1. Image Container - Clean, Minimal Background */}
             <div className='aspect-[3/4] bg-white border border-gray-100 overflow-hidden relative'>
