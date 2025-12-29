@@ -1,6 +1,6 @@
 "use client"
 
-import { SignIn, useAuth } from "@clerk/nextjs"
+import { SignUp, useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import Link from "next/link"
@@ -11,7 +11,7 @@ const monsieur = Monsieur_La_Doulaise({
   subsets: ["latin"],
 })
 
-export default function LoginPage() {
+export default function SignupPage() {
   const { isSignedIn } = useAuth()
   const router = useRouter()
 
@@ -22,25 +22,26 @@ export default function LoginPage() {
   }, [isSignedIn, router])
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Brand bar */}
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header with script logo, no borders */}
 
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-28 pb-24">
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 pt-6 pb-20">
         <div className="relative w-full max-w-2xl mx-auto">
+          {/* Soft glow */}
           <div
             className="absolute inset-0 -z-10 blur-3xl opacity-60 pointer-events-none"
             style={{
               background:
-                "radial-gradient(260px 220px at 50% 15%, #e5e7eb 35%, #ffffff 100%)",
+                "radial-gradient(260px 220px at 50% 10%, #e5e7eb 35%, #ffffff 100%)",
             }}
           />
 
           <div className="space-y-10">
-            {/* Heading */}
+            {/* Welcome Text */}
             <div className="text-center">
               <span className="block text-base sm:text-lg uppercase tracking-[0.25em] text-neutral-400 mb-4">
-                Sign in to
+                Join
               </span>
               <span
                 className={`${monsieur.className} block text-5xl sm:text-6xl text-neutral-900`}
@@ -49,18 +50,14 @@ export default function LoginPage() {
               </span>
 
               <p className="mt-6 text-neutral-500 text-lg sm:text-xl leading-relaxed">
-                Europe’s{" "}
-                <span className="underline decoration-neutral-200">
-                  curated
-                </span>{" "}
-                archive store. Minimal, designer, exclusive pieces – all in one
-                place.
+                Create an account to start your archive clothing journey. Save
+                favorites, follow stores, and check out faster.
               </p>
             </div>
 
-            {/* Clerk sign in */}
+            {/* Clerk SignUp Component */}
             <div className="flex justify-center">
-              <SignIn
+              <SignUp
                 appearance={{
                   elements: {
                     rootBox: "w-full",
@@ -93,60 +90,27 @@ export default function LoginPage() {
                   },
                 }}
                 routing="path"
-                path="/login"
-                signUpUrl="/signup"
+                path="/signup"
+                signInUrl="/login"
                 fallbackRedirectUrl="/"
               />
             </div>
 
-            {/* Extra copy – bottom Vette Clothing in normal font */}
+            {/* Additional Info */}
             <div className="text-center">
               <p className="text-base sm:text-lg text-neutral-600">
-                New to <span className="font-semibold">Vette Clothing</span>?{" "}
+                Already have an account?{" "}
                 <Link
-                  href="/signup"
-                  className="text-neutral-900 underline font-semibold"
+                  href="/login"
+                  className="text-neutral-900 font-semibold hover:underline"
                 >
-                  Become a member
+                  Sign in here
                 </Link>
               </p>
             </div>
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="py-9 px-6 mt-auto bg-white/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-center gap-10 text-base sm:text-lg text-neutral-400 tracking-tight">
-          <Link
-            href="/shop"
-            className="hover:text-neutral-900 transition duration-150"
-          >
-            Shop
-          </Link>
-          <Link
-            href="/create-store"
-            className="hover:text-neutral-900 transition duration-150"
-          >
-            Sell
-          </Link>
-          <Link
-            href="/about"
-            className="hover:text-neutral-900 transition duration-150"
-          >
-            About
-          </Link>
-          <Link
-            href="/help"
-            className="hover:text-neutral-900 transition duration-150"
-          >
-            Help
-          </Link>
-        </div>
-        <div className="mt-7 text-sm text-center text-neutral-300">
-          &copy; {new Date().getFullYear()} Vette Clothing. All rights reserved.
-        </div>
-      </footer>
     </div>
   )
 }

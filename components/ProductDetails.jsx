@@ -8,6 +8,8 @@ import Image from "next/image"
 import Counter from "./Counter"
 import { useDispatch, useSelector } from "react-redux"
 import FavoriteButton from "./FavoriteButton"
+import { useAuth } from "@clerk/nextjs"
+import toast from "react-hot-toast"
 
 const ProductDetails = ({ product }) => {
     const productId = product.id
@@ -16,6 +18,7 @@ const ProductDetails = ({ product }) => {
     const cart = useSelector(state => state.cart.cartItems)
     const dispatch = useDispatch()
     const router = useRouter()
+    const { userId } = useAuth()
 
     const [mainImage, setMainImage] = useState(product.images[0])
     const [favoriteCount, setFavoriteCount] = useState(product.favoriteCount || 0)
@@ -28,6 +31,13 @@ const ProductDetails = ({ product }) => {
     }, [product.favoriteCount, product.isFavorited])
 
     const addToCartHandler = () => {
+        // Check if user is logged in
+        if (!userId) {
+            toast.error('Please log in to add items to cart')
+            router.push('/login')
+            return
+        }
+
         // Prevent adding sold items to cart
         if (product.sold) {
             return

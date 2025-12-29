@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import {Protect, useAuth, useUser} from '@clerk/nextjs'
 import axios from 'axios';
+import { fetchCart, clearCart } from '@/lib/features/cart/cartSlice';
 
 const OrderSummary = ({ totalPrice, items }) => {
 
@@ -19,7 +20,7 @@ const OrderSummary = ({ totalPrice, items }) => {
 
     const addressList = useSelector(state => state.address.list);
 
-    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [paymentMethod, setPaymentMethod] = useState('STRIPE');
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -75,8 +76,11 @@ const OrderSummary = ({ totalPrice, items }) => {
             window.location.href = data.session.url;
           } else {
             toast.success(data.message)
-            router.push('/orders')
+            // Clear the cart from Redux state
+            dispatch(clearCart())
+            // Fetch fresh cart from server (should be empty now)
             dispatch(fetchCart({getToken}))
+            router.push('/orders')
           }
           } catch (error) {
             // Catch block logic would go here
@@ -89,9 +93,9 @@ const OrderSummary = ({ totalPrice, items }) => {
         <div className='w-full max-w-lg lg:max-w-[340px] bg-slate-50/30 border border-slate-200 text-slate-500 text-sm rounded-xl p-7'>
             <h2 className='text-xl font-medium text-slate-600'>Payment Summary</h2>
             <p className='text-slate-400 text-xs my-4'>Payment Method</p>
-            <div className='flex gap-2 items-center'>
-                <input type="radio" id="COD" onChange={() => setPaymentMethod('COD')} checked={paymentMethod === 'COD'} className='accent-gray-500' />
-                <label htmlFor="COD" className='cursor-pointer'>COD</label>
+            <div className='flex gap-2 items-center opacity-50'>
+                <input type="radio" id="COD" name='payment' disabled className='accent-gray-500 cursor-not-allowed' />
+                <label htmlFor="COD" className='cursor-not-allowed line-through'>COD</label>
             </div>
             <div className='flex gap-2 items-center mt-1'>
                 <input type="radio" id="STRIPE" name='payment' onChange={() => setPaymentMethod('STRIPE')} checked={paymentMethod === 'STRIPE'} className='accent-gray-500' />
