@@ -1,10 +1,18 @@
 'use client'
+// 1. Import the font
+import { Monsieur_La_Doulaise } from 'next/font/google'
 import { Search, ShoppingCart, PackageIcon, Heart, XIcon, MoveLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useUser, useClerk, UserButton, useAuth } from '@clerk/nextjs';
+
+// 2. Initialize the font
+const monsieur = Monsieur_La_Doulaise({ 
+    weight: '400', 
+    subsets: ['latin'] 
+})
 
 const Navbar = () => {
     const { user } = useUser();
@@ -14,14 +22,14 @@ const Navbar = () => {
     const hasPlusPlan = has ? has({ plan: 'plus' }) : false;
 
     const [search, setSearch] = useState('');
-    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false); // NEW STATE FOR MOBILE SEARCH
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const cartCount = useSelector(state => state.cart.total);
 
     const handleSearch = (e) => {
         e.preventDefault();
         if (search.trim()) {
             router.push(`/shop?search=${search.trim()}`);
-            setIsMobileSearchOpen(false); // Close search bar after search
+            setIsMobileSearchOpen(false);
         }
     };
     
@@ -59,22 +67,28 @@ const Navbar = () => {
     return (
         <nav className="fixed top-0 left-0 w-full z-40 bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm">
             
-            {/* NEW: Mobile Search Bar Layer */}
             <MobileSearchBar />
 
             <div className="mx-auto flex items-center justify-between max-w-7xl px-4 py-3">
                 
-                {/* Logo (Updated Text and Color) */}
-                <Link href="/" className={`relative text-2xl font-semibold text-neutral-800 tracking-tight select-none transition ${isMobileSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <span className="text-neutral-600">vette</span>clothing<span className="text-neutral-600 text-3xl align-top">.</span>
+                {/* 3. Apply the font class here */}
+                {/* I increased text-2xl to text-4xl because this font renders small */}
+                <Link 
+                    href="/" 
+                    className={`${monsieur.className} relative text-4xl text-neutral-800 tracking-tight select-none transition ${isMobileSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                >
+                    {/* I removed the 'font-semibold' because script fonts don't usually support it well */}
+                    <span className="text-neutral-900">Vette</span>Clothing
+                    
+                    {/* Plus badge stays sans-serif (Inter/Arial) for readability */}
                     {hasPlusPlan && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-neutral-600 align-top">
+                        <span className="ml-2 font-sans px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-neutral-600 align-middle">
                             plus
                         </span>
                     )}
                 </Link>
 
-                {/* Desktop Nav (Remains the same) */}
+                {/* Desktop Nav */}
                 <div className="hidden sm:flex items-center gap-7 text-neutral-700 font-light">
                     <Link href="/" className="hover:text-black transition">Home</Link>
                     <Link href="/shop" className="hover:text-black transition">Shop</Link>
@@ -134,7 +148,6 @@ const Navbar = () => {
 
                 {/* Mobile Nav */}
                 <div className="sm:hidden flex items-center gap-3">
-                    {/* NEW: Mobile Search Toggle Button */}
                     <button onClick={() => setIsMobileSearchOpen(true)} className="text-neutral-700 hover:text-black transition p-1">
                         <Search size={22} />
                     </button>
