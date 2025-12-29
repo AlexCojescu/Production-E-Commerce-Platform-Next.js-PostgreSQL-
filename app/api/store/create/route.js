@@ -22,16 +22,57 @@ export async function POST(request){
             // Get user data from Clerk
             const client = await clerkClient()
             const clerkUser = await client.users.getUser(userId)
+            const email = clerkUser.emailAddresses[0]?.emailAddress || ''
             
-            // Create user in database
-            user = await prisma.user.create({
-                data: {
-                    id: clerkUser.id,
-                    email: clerkUser.emailAddresses[0]?.emailAddress || '',
-                    name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
-                    image: clerkUser.imageUrl || '',
+            // Check if user with this email already exists
+            if (email) {
+                const existingUser = await prisma.user.findUnique({
+                    where: { email }
+                })
+                
+                if (existingUser) {
+                    // User with this email exists - use existing user
+                    // This shouldn't happen with Clerk, but handle it gracefully
+                    user = existingUser
+                } else {
+                    // Create new user
+                    try {
+                        user = await prisma.user.create({
+                            data: {
+                                id: clerkUser.id,
+                                email,
+                                name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                image: clerkUser.imageUrl || '',
+                            }
+                        })
+                    } catch (error) {
+                        // Handle unique constraint violation (email already exists)
+                        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+                            // Try to find and use existing user
+                            const existingUser = await prisma.user.findUnique({
+                                where: { email }
+                            })
+                            if (existingUser) {
+                                user = existingUser
+                            } else {
+                                throw error
+                            }
+                        } else {
+                            throw error
+                        }
+                    }
                 }
-            })
+            } else {
+                // No email - create user anyway (shouldn't happen with Clerk)
+                user = await prisma.user.create({
+                    data: {
+                        id: clerkUser.id,
+                        email: '',
+                        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                        image: clerkUser.imageUrl || '',
+                    }
+                })
+            }
         }
         
         //get

@@ -36,14 +36,72 @@ const authSeller = async (userId) => {
         fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authSeller.js:22',message:'Clerk user fetched',data:{clerkUserId:clerkUser.id,clerkEmail:clerkUser.emailAddresses[0]?.emailAddress},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
         // #endregion
         
-        await prisma.user.create({
-          data: {
-            id: clerkUser.id,
-            email: clerkUser.emailAddresses[0]?.emailAddress || '',
-            name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
-            image: clerkUser.imageUrl || '',
-          },
-        })
+        const email = clerkUser.emailAddresses[0]?.emailAddress || ''
+        
+        // Check if user with this email already exists
+        if (email) {
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
+            include: { store: true }
+          })
+          
+          if (existingUser) {
+            // User with this email exists - use it (shouldn't happen with Clerk, but handle gracefully)
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authSeller.js:39',message:'Email already exists, using existing user',data:{userId,email,existingUserId:existingUser.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            user = existingUser
+          } else {
+            // Create new user
+            try {
+              await prisma.user.create({
+                data: {
+                  id: clerkUser.id,
+                  email,
+                  name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                  image: clerkUser.imageUrl || '',
+                },
+              })
+            } catch (error) {
+              // Handle unique constraint violation (email already exists)
+              if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authSeller.js:57',message:'Email unique constraint violation, fetching existing user',data:{userId,email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+                // Try to find and use existing user
+                const existingUser = await prisma.user.findUnique({
+                  where: { email },
+                  include: { store: true }
+                })
+                if (existingUser) {
+                  user = existingUser
+                } else {
+                  throw error
+                }
+              } else {
+                throw error
+              }
+            }
+          }
+        } else {
+          // No email - create user anyway (shouldn't happen with Clerk)
+          await prisma.user.create({
+            data: {
+              id: clerkUser.id,
+              email: '',
+              name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+              image: clerkUser.imageUrl || '',
+            },
+          })
+        }
+        
+        // Re-fetch user with store relation after creation/update
+        if (!user || !user.store) {
+          user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { store: true },
+          })
+        }
         
         // Re-fetch user with store relation after creation
         user = await prisma.user.findUnique({
