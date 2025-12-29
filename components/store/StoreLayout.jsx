@@ -19,13 +19,22 @@ const StoreLayout = ({ children }) => {
     const fetchIsSeller = async () => {
         try {
           const token = await getToken();
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'StoreLayout.jsx:19',message:'fetchIsSeller called',data:{hasToken:!!token},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+          // #endregion
           const { data } = await axios.get('/api/store/is-seller', { headers: {
             Authorization: `Bearer ${token}` 
           }});
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'StoreLayout.jsx:26',message:'API response received',data:{isSeller:data.isSeller,hasStoreInfo:!!data.storeInfo,storeInfoId:data.storeInfo?.id,storeInfoStatus:data.storeInfo?.status,error:data.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
       
           setIsSeller(data.isSeller);
           setStoreInfo(data.storeInfo);
         } catch (error) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/ca9dae1e-7bdc-4da3-861c-f9a19bbf779b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'StoreLayout.jsx:30',message:'Error in fetchIsSeller',data:{error:error.message,errorResponse:error.response?.data,status:error.response?.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
           console.log(error);
         } finally {
           setLoading(false);
