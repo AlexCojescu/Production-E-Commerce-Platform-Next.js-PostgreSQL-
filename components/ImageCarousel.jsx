@@ -10,7 +10,7 @@ const ImageCarousel = () => {
   
   const slides = [
     { 
-      src: assets.car1, 
+      src: assets.car20, 
       alt: 'Slide 1',
       subtitle: 'RICK OWENS, Vetements, + MORE',
       title: 'Trending Denim + Pants',
@@ -18,8 +18,16 @@ const ImageCarousel = () => {
       buttonHref: '/shop'
     },
     { 
-      src: assets.car2, 
+      src: assets.car19, 
       alt: 'Slide 2',
+      subtitle: 'BEST SELLERS',
+      title: 'Winter Outerwear',
+      buttonText: 'DISCOVER',
+      buttonHref: '/shop'
+    },
+    { 
+      src: assets.car15, 
+      alt: 'Slide 3',
       subtitle: 'NEW COLLECTION',
       title: 'Footware Favorites',
       buttonText: 'EXPLORE',
@@ -27,27 +35,19 @@ const ImageCarousel = () => {
     },
     { 
       src: assets.car3, 
-      alt: 'Slide 3',
+      alt: 'Slide 4',
       subtitle: 'EXCLUSIVE DROPS',
-      title: 'Limited Edition',
+      title: 'Unobtainable Items',
       buttonText: 'VIEW MORE',
       buttonHref: '/shop'
     },
     { 
       src: assets.car4, 
-      alt: 'Slide 4',
+      alt: 'Slide 5',
       subtitle: 'TRENDING NOW',
       title: 'Street Style',
       buttonText: 'CREATE STORE',
       buttonHref: '/create-store'
-    },
-    { 
-      src: assets.car5, 
-      alt: 'Slide 5',
-      subtitle: 'BEST SELLERS',
-      title: 'Customer Favorites',
-      buttonText: 'DISCOVER',
-      buttonHref: '/shop'
     },
     { 
       src: assets.car6, 
