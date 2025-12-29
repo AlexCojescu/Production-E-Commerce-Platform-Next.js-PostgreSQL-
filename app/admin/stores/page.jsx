@@ -1,7 +1,7 @@
 'use client'
 import StoreInfo from "@/components/admin/StoreInfo"
 import Loading from "@/components/Loading"
-import { User, getToken } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import axios from "axios"
@@ -39,7 +39,26 @@ export default function AdminStores() {
         } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
         }
+    }
 
+    const deleteStore = async (storeId, storeName) => {
+        // Confirm deletion
+        const confirmed = window.confirm(
+            `Are you sure you want to delete "${storeName}"?\n\nThis will permanently delete:\n- The store\n- All products\n- All orders\n- All related data\n\nThis action cannot be undone.`
+        )
+
+        if (!confirmed) {
+            return
+        }
+
+        try {
+            const token = await getToken()
+            const { data } = await axios.post('/api/admin/delete-store', {storeId}, {headers: { Authorization: `Bearer ${token}` }})
+            await fetchStores()
+            toast.success(data.message || 'Store deleted successfully')
+        } catch (error) {
+            toast.error(error?.response?.data?.error || error.message)
+        }
     }
 
     useEffect(() => {
@@ -60,13 +79,23 @@ export default function AdminStores() {
                             <StoreInfo store={store} />
 
                             {/* Actions */}
-                            <div className="flex items-center gap-3 pt-2 flex-wrap">
-                                <p>Active</p>
-                                <label className="relative inline-flex items-center cursor-pointer text-gray-900">
-                                    <input type="checkbox" className="sr-only peer" onChange={() => toast.promise(toggleIsActive(store.id), { loading: "Updating data..." })} checked={store.isActive} />
-                                    <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200"></div>
-                                    <span className="dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4"></span>
-                                </label>
+                            <div className="flex items-center gap-4 pt-2 flex-wrap">
+                                <div className="flex items-center gap-3">
+                                    <p>Active</p>
+                                    <label className="relative inline-flex items-center cursor-pointer text-gray-900">
+                                        <input type="checkbox" className="sr-only peer" onChange={() => toast.promise(toggleIsActive(store.id), { loading: "Updating data..." })} checked={store.isActive} />
+                                        <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200"></div>
+                                        <span className="dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4"></span>
+                                    </label>
+                                </div>
+                                <button
+                                    onClick={() => deleteStore(store.id, store.name)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                                    title="Delete Store"
+                                >
+                                    <Trash2 size={16} />
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     ))}
