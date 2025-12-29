@@ -1,12 +1,13 @@
 'use client'
 
 import { addToCart } from "@/lib/features/cart/cartSlice"
-import { Heart, TagIcon, EarthIcon, CreditCardIcon, UserIcon } from "lucide-react"
+import { TagIcon, EarthIcon, CreditCardIcon, UserIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Counter from "./Counter"
 import { useDispatch, useSelector } from "react-redux"
+import FavoriteButton from "./FavoriteButton"
 
 const ProductDetails = ({ product }) => {
     const productId = product.id
@@ -17,7 +18,14 @@ const ProductDetails = ({ product }) => {
     const router = useRouter()
 
     const [mainImage, setMainImage] = useState(product.images[0])
-    const favoriteCount = product.favoriteCount || 0
+    const [favoriteCount, setFavoriteCount] = useState(product.favoriteCount || 0)
+    const [isFavorited, setIsFavorited] = useState(product.isFavorited || false)
+
+    // Update state when product changes
+    useEffect(() => {
+        setFavoriteCount(product.favoriteCount || 0)
+        setIsFavorited(product.isFavorited || false)
+    }, [product.favoriteCount, product.isFavorited])
 
     const addToCartHandler = () => {
         // Prevent adding sold items to cart
@@ -90,9 +98,22 @@ const ProductDetails = ({ product }) => {
                 </div>
 
                 {/* Likes */}
-                <div className="flex items-center mt-3">
-                    <Heart size={16} className="text-red-500" fill="#EF4444" />
-                    <p className="text-sm ml-2 text-neutral-600">
+                <div className="flex items-center gap-3 mt-3">
+                    <FavoriteButton 
+                        productId={productId}
+                        initialIsFavorited={isFavorited}
+                        size={20}
+                        variant="default"
+                        onToggle={(newIsFavorited) => {
+                            // Update count based on the change in favorite state
+                            const wasFavorited = isFavorited
+                            setIsFavorited(newIsFavorited)
+                            if (newIsFavorited !== wasFavorited) {
+                                setFavoriteCount(prev => newIsFavorited ? prev + 1 : Math.max(0, prev - 1))
+                            }
+                        }}
+                    />
+                    <p className="text-sm text-neutral-600">
                         {favoriteCount} {favoriteCount === 1 ? 'Like' : 'Likes'}
                     </p>
                 </div>

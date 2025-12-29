@@ -1,10 +1,14 @@
 
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getAuth } from "@clerk/nextjs/server";
 
 
 export async function GET(request) {
         try {
+            // Get userId if authenticated (optional)
+            const { userId } = getAuth(request);
+
             let products = await prisma.product.findMany({
                 where: {
                     OR: [
@@ -29,12 +33,23 @@ export async function GET(request) {
         orderBy: { createdAt: 'desc' }
       })
 
-    // remove products with store isActive false and add favoriteCount
+    // Get user's favorites if authenticated
+    let userFavorites = new Set();
+    if (userId) {
+        const favorites = await prisma.userFavorite.findMany({
+            where: { userId },
+            select: { productId: true }
+        });
+        userFavorites = new Set(favorites.map(fav => fav.productId));
+    }
+
+    // remove products with store isActive false and add favoriteCount and isFavorited
     products = products
         .filter(product => product.store.isActive)
         .map(product => ({
             ...product,
-            favoriteCount: product._count.favoritedBy
+            favoriteCount: product._count.favoritedBy,
+            isFavorited: userId ? userFavorites.has(product.id) : false
         }))
         .map(({ _count, ...product }) => product)
 

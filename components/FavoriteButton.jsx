@@ -1,16 +1,21 @@
 'use client'
 import { Heart } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
-export default function FavoriteButton({ productId, initialIsFavorited = false, size = 20, variant = 'default' }) {
+export default function FavoriteButton({ productId, initialIsFavorited = false, size = 20, variant = 'default', onToggle }) {
   const { getToken, userId } = useAuth()
   const router = useRouter()
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Sync with initialIsFavorited prop changes
+  useEffect(() => {
+    setIsFavorited(initialIsFavorited)
+  }, [initialIsFavorited])
 
   const toggleFavorite = async (e) => {
     e.preventDefault() // Prevent navigation if inside <Link>
@@ -22,6 +27,7 @@ export default function FavoriteButton({ productId, initialIsFavorited = false, 
     }
 
     setIsLoading(true)
+    const previousState = isFavorited
     const optimisticState = !isFavorited
     setIsFavorited(optimisticState) // Optimistic update
 
@@ -34,9 +40,17 @@ export default function FavoriteButton({ productId, initialIsFavorited = false, 
       )
 
       setIsFavorited(data.isFavorited)
+      
+      // Notify parent component with final state from server
+      // Only call if state changed from previous state
+      if (onToggle && data.isFavorited !== previousState) {
+        onToggle(data.isFavorited)
+      }
+      
       toast.success(data.message)
     } catch (error) {
-      setIsFavorited(!optimisticState) // Revert on error
+      setIsFavorited(previousState) // Revert on error
+      
       toast.error(error?.response?.data?.error || 'Failed to update')
     } finally {
       setIsLoading(false)
