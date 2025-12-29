@@ -15,8 +15,10 @@ const Newsletter = () => {
         }
     }
 
+    // CHANGED: 'pt-0' removes all top space. 
+    // 'pb-16' keeps some space at the bottom so it doesn't touch the footer.
     return (
-        <section className='py-16 sm:py-24 px-4'>
+        <section className='pt-0 pb-16 sm:pb-24 px-4'>
             <div className='max-w-2xl mx-auto'>
                 {/* Header */}
                 <Title 

@@ -44,7 +44,7 @@ export default function FavoriteButton({ productId, initialIsFavorited = false, 
   }
 
   const isInline = variant === 'inline'
-  
+
   return (
     <button
       onClick={toggleFavorite}
@@ -55,8 +55,8 @@ export default function FavoriteButton({ productId, initialIsFavorited = false, 
           ? 'p-1 hover:opacity-70'
           : 'p-2 rounded-full backdrop-blur-sm ' +
             (isFavorited
-              ? 'bg-white/90 hover:bg-white shadow-md'
-              : 'bg-white/70 hover:bg-white/90 shadow-sm'
+          ? 'bg-white/90 hover:bg-white shadow-md'
+          : 'bg-white/70 hover:bg-white/90 shadow-sm'
             ) +
             (isLoading ? ' opacity-50 cursor-not-allowed' : ' hover:shadow-lg')
         }

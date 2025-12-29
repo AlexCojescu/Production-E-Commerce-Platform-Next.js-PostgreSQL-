@@ -15,10 +15,10 @@ const Footer = () => {
         {
             title: "PRODUCTS",
             links: [
-                { text: "Vetements", path: '/', icon: null },
-                { text: "Balenciga", path: '/', icon: null },
-                { text: "Rick Owens", path: '/', icon: null },
-                { text: "Chrome Hearts", path: '/', icon: null },
+                { text: "Tops", path: '/', icon: null },
+                { text: "Bottums", path: '/', icon: null },
+                { text: "Shoes", path: '/', icon: null },
+                { text: "Accessories", path: '/', icon: null },
             ]
         },
         {
@@ -41,10 +41,9 @@ const Footer = () => {
     ];
 
     const socialIcons = [
-        { icon: FacebookIcon, link: "https://www.facebook.com" },
-        { icon: InstagramIcon, link: "https://www.instagram.com" },
-        { icon: TwitterIcon, link: "https://twitter.com" },
-        { icon: LinkedinIcon, link: "https://www.linkedin.com" },
+        { icon: FacebookIcon, link: "" },
+        { icon: InstagramIcon, link: "https://www.instagram.com/interpolfiles/" },
+        { icon: TwitterIcon, link: "" },
     ]
 
     return (
@@ -81,7 +80,7 @@ const Footer = () => {
                     </div>
                 </div>
                 <p className="py-4 text-sm text-slate-500">
-                    Copyright 2025 © gocart All Right Reserved.
+                    Copyright 2025 © VETTECLOTHING All Right Reserved.
                 </p>
             </div>
         </footer>
