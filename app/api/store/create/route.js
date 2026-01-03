@@ -27,13 +27,54 @@ export async function POST(request){
             // Check if user with this email already exists
             if (email) {
                 const existingUser = await prisma.user.findUnique({
-                    where: { email }
+                    where: { email },
+                    include: { store: true }
                 })
                 
                 if (existingUser) {
-                    // User with this email exists - use existing user
-                    // This shouldn't happen with Clerk, but handle it gracefully
-                    user = existingUser
+                    // User with this email exists but may have different ID
+                    // Migrate to current Clerk userId if needed
+                    if (existingUser.id !== userId) {
+                        // If user has a store, migrate it to the current Clerk userId
+                        if (existingUser.store) {
+                            await prisma.user.upsert({
+                                where: { id: userId },
+                                update: {
+                                    email,
+                                    name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                    image: existingUser.image || clerkUser.imageUrl || '',
+                                },
+                                create: {
+                                    id: userId,
+                                    email,
+                                    name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                    image: existingUser.image || clerkUser.imageUrl || '',
+                                    cart: existingUser.cart || {},
+                                },
+                            })
+                            
+                            // Update store to point to the new Clerk userId
+                            await prisma.store.update({
+                                where: { userId: existingUser.id },
+                                data: { userId: userId }
+                            })
+                            user = { id: userId, email, name: existingUser.name, image: existingUser.image }
+                        } else {
+                            // No store, create user with Clerk userId
+                            user = await prisma.user.create({
+                                data: {
+                                    id: userId,
+                                    email,
+                                    name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                    image: existingUser.image || clerkUser.imageUrl || '',
+                                    cart: existingUser.cart || {},
+                                },
+                            })
+                        }
+                    } else {
+                        // Same ID, just use existing user
+                        user = existingUser
+                    }
                 } else {
                     // Create new user
                     try {
@@ -50,10 +91,42 @@ export async function POST(request){
                         if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
                             // Try to find and use existing user
                             const existingUser = await prisma.user.findUnique({
-                                where: { email }
+                                where: { email },
+                                include: { store: true }
                             })
                             if (existingUser) {
-                                user = existingUser
+                                // Handle ID mismatch - migrate store if needed
+                                if (existingUser.id !== userId && existingUser.store) {
+                                    await prisma.user.upsert({
+                                        where: { id: userId },
+                                        update: {},
+                                        create: {
+                                            id: userId,
+                                            email,
+                                            name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                            image: existingUser.image || clerkUser.imageUrl || '',
+                                            cart: existingUser.cart || {},
+                                        },
+                                    })
+                                    await prisma.store.update({
+                                        where: { userId: existingUser.id },
+                                        data: { userId: userId }
+                                    })
+                                    user = { id: userId, email, name: existingUser.name, image: existingUser.image }
+                                } else if (existingUser.id !== userId) {
+                                    // No store, create user with Clerk userId
+                                    user = await prisma.user.create({
+                                        data: {
+                                            id: userId,
+                                            email,
+                                            name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                                            image: existingUser.image || clerkUser.imageUrl || '',
+                                            cart: existingUser.cart || {},
+                                        },
+                                    })
+                                } else {
+                                    user = existingUser
+                                }
                             } else {
                                 throw error
                             }

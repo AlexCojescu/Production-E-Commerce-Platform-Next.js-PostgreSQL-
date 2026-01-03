@@ -29,8 +29,58 @@ const authSeller = async (userId) => {
           })
           
           if (existingUser) {
-            // User with this email exists - use it (shouldn't happen with Clerk, but handle gracefully)
-            user = existingUser
+            // User with this email exists but may have different ID
+            // This can happen if Clerk userId changed or different environment
+            if (existingUser.id !== userId) {
+              // If user has a store, migrate it to the current Clerk userId
+              if (existingUser.store) {
+                // Create new user record with Clerk userId if it doesn't exist
+                try {
+                  await prisma.user.upsert({
+                    where: { id: userId },
+                    update: {
+                      email,
+                      name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                      image: existingUser.image || clerkUser.imageUrl || '',
+                    },
+                    create: {
+                      id: userId,
+                      email,
+                      name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                      image: existingUser.image || clerkUser.imageUrl || '',
+                      cart: existingUser.cart || {},
+                    },
+                  })
+                  
+                  // Update store to point to the new Clerk userId
+                  await prisma.store.update({
+                    where: { userId: existingUser.id },
+                    data: { userId: userId }
+                  })
+                } catch (error) {
+                  console.error('Error migrating user/store to Clerk userId:', error)
+                  // If migration fails, user won't have access - but better than data loss
+                }
+              } else {
+                // No store, just create user with Clerk userId
+                try {
+                  await prisma.user.create({
+                    data: {
+                      id: userId,
+                      email,
+                      name: existingUser.name || `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || clerkUser.username || 'User',
+                      image: existingUser.image || clerkUser.imageUrl || '',
+                      cart: existingUser.cart || {},
+                    },
+                  })
+                } catch (error) {
+                  console.error('Error creating user with Clerk userId:', error)
+                }
+              }
+            } else {
+              // Same ID, just use existing user
+              user = existingUser
+            }
           } else {
             // Create new user
             try {
@@ -51,6 +101,13 @@ const authSeller = async (userId) => {
                   include: { store: true }
                 })
                 if (existingUser) {
+                  // Handle ID mismatch same as above
+                  if (existingUser.id !== userId && existingUser.store) {
+                    await prisma.store.update({
+                      where: { userId: existingUser.id },
+                      data: { userId: userId }
+                    })
+                  }
                   user = existingUser
                 } else {
                   throw error
