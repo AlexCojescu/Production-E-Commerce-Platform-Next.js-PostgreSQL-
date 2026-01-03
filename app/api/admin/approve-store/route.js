@@ -50,13 +50,16 @@ export async function GET(request) {
   
       const stores = await prisma.store.findMany({
         where: { status: { in: ["pending", "rejected"] } },
-        include: { user: true }
+        include: { user: true },
+        orderBy: { createdAt: 'desc' } // Most recent first
       });
   
+      console.log(`Admin ${userId} requested pending stores. Found ${stores.length} stores.`);
+      
       return NextResponse.json({ stores });
       
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching pending stores:', error);
         return NextResponse.json({ error: error.code || error.message }, { status: 400 });
     }
   }

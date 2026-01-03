@@ -15,7 +15,8 @@ export async function POST(request){
 
         // Ensure user exists in database (create if doesn't exist)
         let user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: { id: userId },
+            include: { store: true }
         })
 
         if (!user) {
@@ -164,16 +165,27 @@ export async function POST(request){
             return NextResponse.json({error: "missing store info"}, {status: 400})
         }
 
+        // Ensure user record exists in database before proceeding
+        // Re-fetch user to ensure it was created/migrated properly
+        user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { store: true }
+        })
+
+        if (!user) {
+            console.error(`User ${userId} not found after creation/migration attempt`)
+            return NextResponse.json({error: "User not found. Please try logging out and back in."}, {status: 404})
+        }
+
         //check is user already registered
+        const store = await prisma.store.findFirst({
+            where: { userId: userId}
+        })
 
-            const store = await prisma.store.findFirst({
-                where: { userId: userId}
-            })
-
-            //if store is already registered
-            if(store){
-                return NextResponse.json({status: store.status})
-            }
+        //if store is already registered
+        if(store){
+            return NextResponse.json({status: store.status})
+        }
 
             //check if username is taken
             const isUsernameTaken = await prisma.store.findFirst({
@@ -210,20 +222,30 @@ export async function POST(request){
                   email,
                   contact,
                   address,
-                  logo: optimizedImage
+                  logo: optimizedImage,
+                  status: 'pending' // Explicitly set status
                 }
               })
-            // link store to user
-        await prisma.user.update({
-            where: { id: userId },
-            data: { store: { connect: { id: newStore.id } } }
-        })
-        
-        return NextResponse.json({ message: "applied, waiting for approval" })
+            
+            console.log(`Store created successfully: ${newStore.id} for user: ${userId}`)
+            
+            // Store is already linked via userId foreign key, but ensure user relation exists
+            // The store.user relation should work automatically via Prisma
+            
+            return NextResponse.json({ message: "applied, waiting for approval", storeId: newStore.id })
         
         } catch (error) {
-            console.error(error);
-            return NextResponse.json({ error: error.code || error.message }, {})
+            console.error('Error creating store:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                meta: error.meta,
+                userId: userId
+            });
+            return NextResponse.json({ 
+                error: error.code || error.message || 'Failed to create store',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            }, { status: 500 })
         }
     }
 
