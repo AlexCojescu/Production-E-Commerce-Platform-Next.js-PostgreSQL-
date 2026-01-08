@@ -10,13 +10,17 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.35.0",
+    "@ai-sdk/openai": "^3.0.7",
+    "@ai-sdk/react": "^1.2.12",
+    "@clerk/nextjs": "^6.36.6",
     "@imagekit/next": "^2.1.3",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^6.19.0",
     "@prisma/client": "^6.19.0",
     "@reduxjs/toolkit": "^2.8.2",
+    "ai": "^6.0.6",
     "axios": "^1.13.2",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "eslint-config-next": "^16.0.7",
     "imagekit": "^6.0.0",
@@ -26,9 +30,11 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.5.2",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",
     "recharts": "^3.1.2",
     "stripe": "^19.3.1",
+    "tailwind-merge": "^3.4.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
