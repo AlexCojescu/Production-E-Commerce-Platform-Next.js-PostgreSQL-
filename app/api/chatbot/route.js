@@ -40,9 +40,19 @@ export async function POST(request) {
   try {
     // Validate origin before processing
     if (!validateOrigin(request)) {
+      const origin = request.headers.get('origin');
+      const host = request.headers.get('host');
+      const referer = request.headers.get('referer');
+      
       safeLog('warn', 'Chatbot API: Unauthorized origin attempt', {
-        origin: request.headers.get('origin')
+        origin: origin || 'none',
+        host: host || 'none',
+        referer: referer ? new URL(referer).origin : 'none',
+        allowedOrigins: process.env.CHATBOT_ALLOWED_ORIGINS || 'not-set',
+        vercelUrl: process.env.VERCEL_URL || 'not-set',
+        nodeEnv: process.env.NODE_ENV
       });
+      
       return NextResponse.json(
         { error: "Unauthorized origin" },
         { 
