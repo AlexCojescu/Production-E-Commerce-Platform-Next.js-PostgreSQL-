@@ -20,6 +20,10 @@
 # production
 /build
 
+# editor settings
+.cursor/
+.cursorrules
+
 # misc
 .DS_Store
 *.pem

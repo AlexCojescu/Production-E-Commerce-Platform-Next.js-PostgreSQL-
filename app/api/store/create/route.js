@@ -1,7 +1,10 @@
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import imagekit from "@/configs/imagekit";
+import { uploadValidatedImage, UploadValidationError } from "@/lib/uploadImage";
+import { enforceRateLimit, inputValidationResponse } from "@/lib/apiGuard";
+import { requireString, requireEmail, LIMITS } from "@/lib/inputLimits";
+import { safeLog } from "@/lib/logScrubber";
 
 //create the store
 
@@ -12,6 +15,9 @@ export async function POST(request){
         if (!userId) {
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
+
+        const limited = enforceRateLimit(request, { userId, scope: 'store-create' })
+        if (limited) return limited
 
         // Ensure user exists in database (create if doesn't exist)
         let user = await prisma.user.findUnique({
@@ -153,16 +159,30 @@ export async function POST(request){
 
         const formData = await request.formData()
 
-        const name = formData.get("name")
-        const username = formData.get("username")
-        const description = formData.get("description")
-        const email = formData.get("email")
-        const contact = formData.get("contact")
-        const address = formData.get("address")
+        const rawName = formData.get("name")
+        const rawUsername = formData.get("username")
+        const rawDescription = formData.get("description")
+        const rawEmail = formData.get("email")
+        const rawContact = formData.get("contact")
+        const rawAddress = formData.get("address")
         const image = formData.get("image")
 
-        if (!name || !username || !description || !email || !contact || !address || !image){
+        if (!rawName || !rawUsername || !rawDescription || !rawEmail || !rawContact || !rawAddress || !image || typeof image === 'string'){
             return NextResponse.json({error: "missing store info"}, {status: 400})
+        }
+
+        let name, username, description, email, contact, address
+        try {
+          name = requireString(rawName, LIMITS.STORE_NAME, 'name')
+          username = requireString(rawUsername, LIMITS.STORE_USERNAME, 'username').toLowerCase()
+          description = requireString(rawDescription, LIMITS.STORE_DESCRIPTION, 'description')
+          email = requireEmail(rawEmail, 'email')
+          contact = requireString(rawContact, LIMITS.STORE_CONTACT, 'contact')
+          address = requireString(rawAddress, LIMITS.STORE_ADDRESS, 'address')
+        } catch (validationError) {
+          const validation = inputValidationResponse(validationError)
+          if (validation) return validation
+          throw validationError
         }
 
         // Ensure user record exists in database before proceeding
@@ -189,36 +209,41 @@ export async function POST(request){
 
             //check if username is taken
             const isUsernameTaken = await prisma.store.findFirst({
-                where: { username: username.toLowerCase() }
+                where: { username }
             })
 
             if(isUsernameTaken){
                 return NextResponse.json({error: "username already taken"}, {status: 400})
             }
 
-            // image upload to imagekit
+            // image upload to imagekit (magic-byte validated; client MIME type is not trusted)
             const buffer = Buffer.from(await image.arrayBuffer());
-            const response = await imagekit.upload({
-            file: buffer,
-            fileName: image.name,
-            folder: "logos"
-            });
 
-            const optimizedImage = imagekit.url({
-            path: response.filePath,
-            transformation: [
-                { quality: 'auto' },
-                { format: 'webp' },
-                { width: '512' },
-            ]
-            })
+            let optimizedImage
+            try {
+                const { url } = await uploadValidatedImage(buffer, {
+                    folder: "logos",
+                    originalName: image.name,
+                    transformations: [
+                        { quality: 'auto' },
+                        { format: 'webp' },
+                        { width: '512' },
+                    ],
+                })
+                optimizedImage = url
+            } catch (error) {
+                if (error instanceof UploadValidationError) {
+                    return NextResponse.json({ error: error.message }, { status: 400 })
+                }
+                throw error
+            }
 
             const newStore = await prisma.store.create({
                 data: {
                   userId,
                   name,
                   description,
-                  username: username.toLowerCase(),
+                  username,
                   email,
                   contact,
                   address,
@@ -227,7 +252,10 @@ export async function POST(request){
                 }
               })
             
-            console.log(`Store created successfully: ${newStore.id} for user: ${userId}`)
+            safeLog('info', 'Store created successfully', {
+              storeId: newStore.id,
+              userId,
+            })
             
             // Store is already linked via userId foreign key, but ensure user relation exists
             // The store.user relation should work automatically via Prisma
@@ -235,13 +263,11 @@ export async function POST(request){
             return NextResponse.json({ message: "applied, waiting for approval", storeId: newStore.id })
         
         } catch (error) {
-            console.error('Error creating store:', error);
-            console.error('Error details:', {
-                code: error.code,
-                message: error.message,
-                meta: error.meta,
-                userId: userId
-            });
+            safeLog('error', 'Error creating store', {
+              userId,
+              code: error.code,
+              message: error.message?.substring(0, 200),
+            })
             return NextResponse.json({ 
                 error: error.code || error.message || 'Failed to create store',
                 details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -253,6 +279,9 @@ export async function POST(request){
 export async function GET(request) {
     try {
       const { userId } = getAuth(request)
+      if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
       const store = await prisma.store.findFirst({
         where: { userId: userId}
     })

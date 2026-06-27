@@ -3,6 +3,9 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { PaymentMethod } from "@prisma/client";
 import Stripe from "stripe";
+import { findAddressForUser } from "@/lib/authz";
+import { enforceRateLimit, readJsonBody, inputValidationResponse } from "@/lib/apiGuard";
+import { validateOrderItems, requireCouponCode } from "@/lib/inputLimits";
 
 export async function POST(request) {
   try {
@@ -10,15 +13,27 @@ export async function POST(request) {
     if (!userId) {
       return NextResponse.json({ error: "not authorized" }, { status: 401 });
     }
-    
-    const { addressId, items, couponCode, paymentMethod } = await request.json()
 
-    // Check if all required fields are present
-    if (!addressId || !paymentMethod || !items || !Array.isArray(items) || items.length === 0) {
-        return NextResponse.json({ error: "missing order details." }, { status: 401 });
+    const limited = enforceRateLimit(request, { userId, scope: 'orders' })
+    if (limited) return limited
+
+    const parsed = await readJsonBody(request)
+    if (parsed.error) return parsed.error
+
+    const { addressId, items, couponCode: rawCouponCode, paymentMethod } = parsed.body
+
+    if (!addressId || typeof addressId !== 'string' || !paymentMethod) {
+        return NextResponse.json({ error: "missing order details." }, { status: 400 });
       }
-      
-      let coupon = null;
+
+    if (!Object.values(PaymentMethod).includes(paymentMethod)) {
+      return NextResponse.json({ error: "invalid payment method" }, { status: 400 })
+    }
+
+    validateOrderItems(items)
+
+    let coupon = null;
+    const couponCode = rawCouponCode ? requireCouponCode(rawCouponCode) : null;
       
       if (couponCode) {
         coupon = await prisma.coupon.findUnique({
@@ -29,7 +44,7 @@ export async function POST(request) {
           }
       }
 
-    if(couponCode && coupon.forNewUser) {
+    if(couponCode && coupon?.forNewUser) {
       const userorders = await prisma.order.findMany({where: {userId}})
       if (userorders.length > 0) {
         return NextResponse.json({ error: "Coupon valid for new users" }, {
@@ -45,11 +60,19 @@ export async function POST(request) {
       }
     }
 
+    const ownedAddress = await findAddressForUser(userId, addressId)
+    if (!ownedAddress) {
+      return NextResponse.json({ error: "Invalid address" }, { status: 403 })
+    }
+
     // Group orders by storeId using a Map
     const ordersByStore = new Map()
 
     for (const item of items) {
         const product = await prisma.product.findUnique({where: { id: item.id }})
+        if (!product || !product.inStock || product.sold) {
+          return NextResponse.json({ error: "One or more products are unavailable" }, { status: 400 })
+        }
         const storeId = product.storeId
 
         if (!ordersByStore.has(storeId)) {
@@ -98,7 +121,11 @@ export async function POST(request) {
       }
 
       if (paymentMethod === 'STRIPE') {
-        const stripe = Stripe(process.env.STRIPE_SECRET_KEY)
+        const stripeKey = process.env.STRIPE_SECRET_KEY
+        if (!stripeKey?.trim()) {
+          return NextResponse.json({ error: "Payment service unavailable" }, { status: 503 })
+        }
+        const stripe = Stripe(stripeKey)
         const origin = await request.headers.get('origin')
       
         const session = await stripe.checkout.sessions.create({
@@ -136,6 +163,8 @@ export async function POST(request) {
   return NextResponse.json({ message: 'Orders Placed Successfully' })
       
 } catch (error) {
+    const validation = inputValidationResponse(error)
+    if (validation) return validation
     console.error(error);
     return NextResponse.json({ error: error.code || error.message }, { status: 400 })
   }
@@ -146,6 +175,9 @@ export async function POST(request) {
 export async function GET(request) {
     try {
         const { userId } = getAuth(request)
+        if (!userId) {
+          return NextResponse.json({ error: "not authorized" }, { status: 401 })
+        }
         const orders = await prisma.order.findMany({
           where: {
             userId,

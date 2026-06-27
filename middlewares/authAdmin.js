@@ -1,14 +1,19 @@
 import { clerkClient } from "@clerk/nextjs/server"
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { isAdminEmail, isAdminEmailConfigured } from "@/lib/requiredEnv"
 
 const authAdmin = async (userId) => {
   try {
     if (!userId) return false
 
+    if (!isAdminEmailConfigured()) {
+      console.error('[security] ADMIN_EMAIL is not configured; denying admin access')
+      return false
+    }
+
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-
-    return process.env.ADMIN_EMAIL.split(',').includes(user.emailAddresses[0].emailAddress)
+    const email = user.emailAddresses[0]?.emailAddress
+    return isAdminEmail(email)
   } catch (error) {
     console.error(error)
     return false

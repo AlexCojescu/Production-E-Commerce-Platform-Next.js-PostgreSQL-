@@ -2,6 +2,8 @@
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { enforceRateLimit, readJsonBody, inputValidationResponse } from "@/lib/apiGuard";
+import { validateAddressFields } from "@/lib/inputLimits";
 
 export async function POST(request) {
     try {
@@ -9,6 +11,12 @@ export async function POST(request) {
       if (!userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
+
+      const limited = enforceRateLimit(request, { userId, scope: 'address' })
+      if (limited) return limited
+
+      const parsed = await readJsonBody(request)
+      if (parsed.error) return parsed.error
 
       // Ensure user exists in database (create if doesn't exist)
       let user = await prisma.user.findUnique({
@@ -76,18 +84,18 @@ export async function POST(request) {
         }
       }
 
-      const { address } = await request.json()
-
-      address.userId = userId
+      const { address } = parsed.body
+      const validatedAddress = validateAddressFields(address || {})
 
       const newAddress = await prisma.address.create({
-        data: address
+        data: { userId, ...validatedAddress }
       })
       // Save the cart to the user object
   
       return NextResponse.json({newAddress, message: 'Address added succesfully' })
     } catch (error) {
-      // Catch block logic would go here
+      const validation = inputValidationResponse(error)
+      if (validation) return validation
       console.error(error);
       return NextResponse.json({ error: error.code || error.message }, { status: 400 })
     }
@@ -98,6 +106,9 @@ export async function POST(request) {
 export async function GET(request){
     try {
       const { userId } = getAuth(request)
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
      
       const addresses = await prisma.address.findMany({
         where: { userId }

@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import authAdmin from "@/middlewares/authAdmin";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { enforceRateLimit, readJsonBody, inputValidationResponse, RATE_LIMITS } from "@/lib/apiGuard";
+import { requireEmail } from "@/lib/inputLimits";
 
 // Check if a user exists in Clerk and database
 export async function POST(request) {
@@ -13,24 +15,27 @@ export async function POST(request) {
             return NextResponse.json({ error: 'not authorized' }, { status: 401 });
         }
 
-        const { email } = await request.json();
+        const limited = enforceRateLimit(request, {
+          userId,
+          scope: 'admin-check-user',
+          ...RATE_LIMITS.STRICT,
+        })
+        if (limited) return limited
 
-        if (!email) {
-            return NextResponse.json({ error: 'email is required' }, { status: 400 });
-        }
+        const parsed = await readJsonBody(request)
+        if (parsed.error) return parsed.error
 
-        // Check database
+        const email = requireEmail(parsed.body?.email, 'email')
+
         const dbUser = await prisma.user.findUnique({
             where: { email },
             include: { store: true }
         });
 
-        // Check Clerk
         let clerkUser = null;
         let clerkError = null;
         try {
             const client = await clerkClient();
-            // Search for user by email in Clerk
             const users = await client.users.getUserList({
                 emailAddress: [email]
             });
@@ -62,8 +67,9 @@ export async function POST(request) {
         });
 
     } catch (error) {
+        const validation = inputValidationResponse(error)
+        if (validation) return validation
         console.error(error);
         return NextResponse.json({ error: error.code || error.message }, { status: 400 });
     }
 }
-

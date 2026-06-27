@@ -5,6 +5,7 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { useUser, useAuth } from "@clerk/nextjs"
 import Image from "next/image"
+import { safeImageSrc } from "@/lib/safeUrls"
 import { Trash2, ShoppingBag, Star, MapPin, Heart } from "lucide-react"
 
 export default function AdminUsers() {
@@ -77,7 +78,7 @@ export default function AdminUsers() {
                                         <Image
                                             width={80}
                                             height={80}
-                                            src={userData.image || '/default-avatar.png'}
+                                            src={safeImageSrc(userData.image, '/default-avatar.png')}
                                             alt={userData.name}
                                             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-slate-100 shadow-sm"
                                         />

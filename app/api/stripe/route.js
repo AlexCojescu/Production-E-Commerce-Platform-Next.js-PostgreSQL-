@@ -4,10 +4,24 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+function getStripeClient() {
+  const secretKey = process.env.STRIPE_SECRET_KEY
+  if (!secretKey?.trim()) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(secretKey)
+}
 
 export async function POST(request) {
   try {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!webhookSecret?.trim()) {
+      console.error('[security] STRIPE_WEBHOOK_SECRET is not configured')
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+    }
+
+    const stripe = getStripeClient()
+
     // Get raw body for Stripe signature verification
     const body = await request.text(); // raw string, no body parser needed [web:24][web:27]
     const sig = request.headers.get("stripe-signature");
@@ -15,7 +29,7 @@ export async function POST(request) {
     const event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+      webhookSecret
     ); // [web:24][web:27]
 
     const handlePaymentIntent = async (paymentIntentId, isPaid) => {

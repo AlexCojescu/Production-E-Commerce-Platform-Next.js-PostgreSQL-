@@ -1,5 +1,11 @@
 import { inngest } from "./client";
 import prisma from '@/lib/prisma'
+import { sanitizeProfileImageUrl } from '@/lib/safeUrls'
+import { safeLog } from '@/lib/logScrubber'
+
+function safeClerkImageUrl(imageUrl) {
+  return sanitizeProfileImageUrl(imageUrl, '')
+}
 
 export const syncUserCreation = inngest.createFunction(
     {id: 'sync-user-create'},
@@ -9,7 +15,7 @@ export const syncUserCreation = inngest.createFunction(
         const email = data.email_addresses[0]?.email_address
         
         if (!email) {
-            console.error('No email address found for user:', data.id)
+            safeLog('error', 'Clerk user.created: no email address', { userId: data.id })
             return
         }
 
@@ -19,15 +25,16 @@ export const syncUserCreation = inngest.createFunction(
         })
 
         if (existingUser) {
-            // If user exists with different ID, this shouldn't happen (Clerk prevents duplicate emails)
-            // But if it does, update the existing user instead of creating a duplicate
-            console.warn(`User with email ${email} already exists with ID ${existingUser.id}, but Clerk created user with ID ${data.id}`)
+            safeLog('warn', 'Clerk user.created: email already exists, reconciling user id', {
+              userId: data.id,
+              existingUserId: existingUser.id,
+            })
             await prisma.user.update({
                 where: { email },
                 data: {
                     id: data.id,
                     name: `${data.first_name} ${data.last_name}`,
-                    image: data.image_url,
+                    image: safeClerkImageUrl(data.image_url),
                 }
             })
             return
@@ -45,7 +52,7 @@ export const syncUserCreation = inngest.createFunction(
                 data: {
                     email,
                     name: `${data.first_name} ${data.last_name}`,
-                    image: data.image_url,
+                    image: safeClerkImageUrl(data.image_url),
                 }
             })
             return
@@ -58,19 +65,21 @@ export const syncUserCreation = inngest.createFunction(
                     id: data.id,
                     email,
                     name: `${data.first_name} ${data.last_name}`,
-                    image: data.image_url,
+                    image: safeClerkImageUrl(data.image_url),
                 }
             })
         } catch (error) {
             // Handle unique constraint violation (email already exists)
             if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-                console.warn(`Email ${email} already exists, updating existing user`)
+                safeLog('warn', 'Clerk user.created: email conflict on create, updating existing user', {
+                  userId: data.id,
+                })
                 await prisma.user.update({
                     where: { email },
                     data: {
                         id: data.id,
                         name: `${data.first_name} ${data.last_name}`,
-                        image: data.image_url,
+                        image: safeClerkImageUrl(data.image_url),
                     }
                 })
             } else {
@@ -91,7 +100,7 @@ export const syncUserUpdation = inngest.createFunction(
         data: {
           email: data.email_addresses[0].email_address,
           name: `${data.first_name} ${data.last_name}`,
-          image: data.image_url,
+          image: safeClerkImageUrl(data.image_url),
         }
       })
     }

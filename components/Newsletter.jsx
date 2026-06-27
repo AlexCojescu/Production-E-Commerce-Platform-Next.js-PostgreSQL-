@@ -1,13 +1,21 @@
 'use client'
 import React, { useState } from 'react'
+import { isValidEmail } from '@/lib/inputLimits'
 import Title from './Title'
 
 const Newsletter = () => {
     const [email, setEmail] = useState('')
     const [isSubscribed, setIsSubscribed] = useState(false)
 
+    const [emailError, setEmailError] = useState('')
+
     const handleSubscribe = (e) => {
         e.preventDefault()
+        setEmailError('')
+        if (!isValidEmail(email)) {
+            setEmailError('Please enter a valid email address.')
+            return
+        }
         if (email) {
             setIsSubscribed(true)
             setEmail('')
@@ -44,6 +52,12 @@ const Newsletter = () => {
                         Subscribe
                     </button>
                 </form>
+
+                {emailError && (
+                    <p className='mt-4 text-center text-sm text-red-600 font-medium'>
+                        {emailError}
+                    </p>
+                )}
 
                 {/* Success Message */}
                 {isSubscribed && (

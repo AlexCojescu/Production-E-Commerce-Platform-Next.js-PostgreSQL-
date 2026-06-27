@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { sanitizeProfileImageUrl } from "@/lib/safeUrls";
 
 // Get all users
 export async function GET(request) {
@@ -46,7 +47,12 @@ export async function GET(request) {
             }
         });
 
-        return NextResponse.json({ users });
+        const sanitizedUsers = users.map((user) => ({
+            ...user,
+            image: sanitizeProfileImageUrl(user.image, ''),
+        }));
+
+        return NextResponse.json({ users: sanitizedUsers });
 
     } catch (error) {
         console.error(error);

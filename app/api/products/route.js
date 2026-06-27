@@ -2,6 +2,35 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
+import {
+  filterAllowedImageKitUrls,
+  isAllowedImageKitUrl,
+  sanitizeProfileImageUrl,
+} from "@/lib/safeUrls";
+
+function sanitizeProductImages(product) {
+  return {
+    ...product,
+    images: filterAllowedImageKitUrls(product.images),
+    store: product.store
+      ? {
+          ...product.store,
+          logo: isAllowedImageKitUrl(product.store.logo) ? product.store.logo : '',
+        }
+      : product.store,
+    rating: Array.isArray(product.rating)
+      ? product.rating.map((entry) => ({
+          ...entry,
+          user: entry.user
+            ? {
+                ...entry.user,
+                image: sanitizeProfileImageUrl(entry.user.image, ''),
+              }
+            : entry.user,
+        }))
+      : product.rating,
+  }
+}
 
 
 export async function GET(request) {
@@ -46,6 +75,7 @@ export async function GET(request) {
     // remove products with store isActive false and add favoriteCount and isFavorited
     products = products
         .filter(product => product.store.isActive)
+        .map(sanitizeProductImages)
         .map(product => ({
             ...product,
             favoriteCount: product._count.favoritedBy,
