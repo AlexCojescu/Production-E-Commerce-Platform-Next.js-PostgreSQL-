@@ -24,7 +24,7 @@ export async function POST(request) {
                 name: "app/coupon.expired",
                 data: {
                   code: coupon.code,
-                  experies_at: coupon.expiresAt,
+                  expires_at: coupon.expiresAt,
                 }
               })
             })
