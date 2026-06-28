@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma"
 import authSeller from "@/middlewares/authSeller";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/apiGuard";
 
 
 // Update seller order status
@@ -20,7 +21,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'not authorized' }, { status: 401 });
     }
 
-    const {orderId, status } = await request.json()
+    const parsed = await readJsonBody(request)
+    if (parsed.error) return parsed.error
+    const { orderId, status } = parsed.body
 
     await prisma.order.update({
         where: { id: orderId, storeId },

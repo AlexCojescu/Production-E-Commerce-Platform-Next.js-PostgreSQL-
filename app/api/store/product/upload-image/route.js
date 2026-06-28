@@ -2,6 +2,8 @@ import authSeller from "@/middlewares/authSeller";
 import { uploadValidatedImage, UploadValidationError } from "@/lib/uploadImage";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { assertBodySizeWithin, BodyTooLargeError } from "@/lib/apiGuard";
+import { MAX_UPLOAD_BYTES } from "@/lib/imageValidation";
 
 export async function POST(request) {
     try {
@@ -13,6 +15,15 @@ export async function POST(request) {
         const storeId = await authSeller(userId)
         if (!storeId) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+        }
+
+        try {
+            assertBodySizeWithin(request, MAX_UPLOAD_BYTES)
+        } catch (error) {
+            if (error instanceof BodyTooLargeError) {
+                return NextResponse.json({ message: error.message }, { status: 413 })
+            }
+            throw error
         }
 
         const formData = await request.formData();

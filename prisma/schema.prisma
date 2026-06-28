@@ -37,9 +37,13 @@ model Product {
     brand       String   @default("N/A")
     condition   String   @default("N/A")
     size        String   @default("N/A")
-    inStock     Boolean  @default(true)
-    sold        Boolean  @default(false)
-    storeId     String
+    inStock       Boolean  @default(true)
+    sold          Boolean  @default(false)
+    dateBought    DateTime @default(now())
+    dateSold      DateTime?
+    acquiredPrice Float    @default(0)
+    soldPrice     Float?
+    storeId       String
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 
@@ -55,6 +59,7 @@ enum OrderStatus {
     PROCESSING
     SHIPPED
     DELIVERED
+    CANCELLED
 }
 
 enum PaymentMethod {
@@ -71,6 +76,8 @@ model Order {
     storeId       String
     addressId     String
     isPaid        Boolean       @default(false)
+    isRefunded    Boolean       @default(false)
+    stripePaymentIntentId String?
     paymentMethod PaymentMethod
     createdAt     DateTime      @default(now())
     updatedAt     DateTime      @updatedAt

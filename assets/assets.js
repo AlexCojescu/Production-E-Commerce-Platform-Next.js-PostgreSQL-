@@ -22,6 +22,7 @@ import car11 from "./car11.jpg"
 import car12 from "./car12.jpg"
 import car13 from "./car13.jpg"
 import car14 from "./car14.jpg"
+import upload_area from "./upload_area.svg"
 
 export const assets = {
   // ...
@@ -45,6 +46,7 @@ export const assets = {
   car18,
   car19,
   car20,
+  upload_area,
 }
 
 

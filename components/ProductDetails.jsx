@@ -1,225 +1,245 @@
 'use client'
 
-import { addToCart } from "@/lib/features/cart/cartSlice"
-import { TagIcon, EarthIcon, CreditCardIcon, UserIcon } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Counter from "./Counter"
-import { useDispatch, useSelector } from "react-redux"
-import FavoriteButton from "./FavoriteButton"
-import { useAuth } from "@clerk/nextjs"
-import toast from "react-hot-toast"
+import { addToCart } from '@/lib/features/cart/cartSlice'
+import { EarthIcon, CreditCardIcon, UserIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { useDispatch, useSelector } from 'react-redux'
+import FavoriteButton from './FavoriteButton'
+import { useAuth } from '@clerk/nextjs'
+import toast from 'react-hot-toast'
 
 const ProductDetails = ({ product }) => {
-    const productId = product.id
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
+  const productId = product.id
+  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
-    const cart = useSelector(state => state.cart.cartItems)
-    const dispatch = useDispatch()
-    const router = useRouter()
-    const { userId } = useAuth()
+  const cart = useSelector((state) => state.cart.cartItems)
+  const dispatch = useDispatch()
+  const router = useRouter()
+  const { userId } = useAuth()
 
-    const [mainImage, setMainImage] = useState(product.images[0])
-    const [favoriteCount, setFavoriteCount] = useState(product.favoriteCount || 0)
-    const [isFavorited, setIsFavorited] = useState(product.isFavorited || false)
+  const [mainImage, setMainImage] = useState(product.images[0])
+  const [favoriteCount, setFavoriteCount] = useState(product.favoriteCount || 0)
+  const [isFavorited, setIsFavorited] = useState(product.isFavorited || false)
 
-    // Update state when product changes
-    useEffect(() => {
-        setFavoriteCount(product.favoriteCount || 0)
-        setIsFavorited(product.isFavorited || false)
-    }, [product.favoriteCount, product.isFavorited])
+  useEffect(() => {
+    setMainImage(product.images[0])
+    setFavoriteCount(product.favoriteCount || 0)
+    setIsFavorited(product.isFavorited || false)
+  }, [product.id, product.images, product.favoriteCount, product.isFavorited])
 
-    const addToCartHandler = () => {
-        // Check if user is logged in
-        if (!userId) {
-            toast.error('Please log in to add items to cart')
-            router.push('/login')
-            return
-        }
-
-        // Prevent adding sold items to cart
-        if (product.sold) {
-            return
-        }
-        dispatch(addToCart({ productId, product }))
+  const addToCartHandler = () => {
+    if (!userId) {
+      toast.error('Please log in to add items to cart')
+      router.push('/login')
+      return
     }
 
-    const discount = product.mrp
-        ? ((product.mrp - product.price) / product.mrp * 100).toFixed(0)
-        : null
+    if (product.sold) return
 
-    return (
-        <div className="flex max-lg:flex-col gap-10 lg:gap-12">
-            {/* Image Column */}
-            <div className="flex max-sm:flex-col-reverse gap-3 w-full lg:w-1/2">
-                {/* Thumbnails */}
-                <div className="flex sm:flex-col gap-3">
-                    {product.images.map((image, index) => (
-                        <button
-                            key={index}
-                            type="button"
-                            onClick={() => setMainImage(product.images[index])}
-                            className={`bg-white border flex items-center justify-center size-18 sm:size-20 rounded-lg cursor-pointer overflow-hidden transition 
-                                ${mainImage === image
-                                    ? "border-neutral-900"
-                                    : "border-neutral-200 hover:border-neutral-400"}`}
-                        >
-                            <Image
-                                src={image}
-                                className="object-cover w-full h-full"
-                                alt={product.name}
-                                width={80}
-                                height={80}
-                            />
-                        </button>
-                    ))}
-                </div>
+    dispatch(addToCart({ productId, product }))
+  }
 
-                {/* Main Image */}
-                <div className="flex-1 flex items-center justify-center">
-                <div className="inline-block bg-white rounded-xl overflow-hidden border border-neutral-200">
-                    <Image
-                    src={mainImage}
-                    alt={product.name}
-                    className="block h-auto w-auto max-w-full max-h-[70vh] object-contain"
-                    width={800}      // keep a reasonable max width
-                    height={1200}    // and height; just aspect hint, real aspect comes from image
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
-                    />
-                </div>
-                </div>
+  const discount =
+    product.mrp && product.mrp > product.price
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : null
 
+  const formattedPrice =
+    typeof product.price === 'number'
+      ? product.price.toLocaleString('en-US')
+      : product.price
 
-            </div>
+  const formattedMrp =
+    typeof product.mrp === 'number'
+      ? product.mrp.toLocaleString('en-US')
+      : product.mrp
 
-            {/* Info Column */}
-            <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900">
-                        {product.name}
-                    </h1>
-                    {product.sold && (
-                        <span className="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wide">
-                            SOLD
-                        </span>
-                    )}
-                </div>
+  const savingsAmount =
+    discount &&
+    typeof product.mrp === 'number' &&
+    typeof product.price === 'number'
+      ? (product.mrp - product.price).toLocaleString('en-US')
+      : null
 
-                {/* Likes */}
-                <div className="flex items-center gap-3 mt-3">
-                    <FavoriteButton 
-                        productId={productId}
-                        initialIsFavorited={isFavorited}
-                        size={20}
-                        variant="default"
-                        onToggle={(newIsFavorited) => {
-                            // Update count based on the change in favorite state
-                            const wasFavorited = isFavorited
-                            setIsFavorited(newIsFavorited)
-                            if (newIsFavorited !== wasFavorited) {
-                                setFavoriteCount(prev => newIsFavorited ? prev + 1 : Math.max(0, prev - 1))
-                            }
-                        }}
-                    />
-                    <p className="text-sm text-neutral-600">
-                        {favoriteCount} {favoriteCount === 1 ? 'Like' : 'Likes'}
-                    </p>
-                </div>
+  const showBrand = product.brand && product.brand !== 'N/A'
+  const isInCart = Boolean(cart[productId])
 
-                {/* Price Block */}
-                <div className="flex items-end gap-3 my-6">
-                    <p className="text-2xl font-semibold text-neutral-900">
-                        {currency}{product.price}
-                    </p>
-                    <p className="text-sm text-neutral-400 line-through">
-                        {currency}{product.mrp}
-                    </p>
-                    {discount && (
-                        <span className="text-xs font-medium text-green-600">
-                            -{discount}%
-                        </span>
-                    )}
-                </div>
+  const specItems = [
+    showBrand && { label: 'Brand', value: product.brand },
+    product.size && product.size !== 'N/A' && { label: 'Size', value: product.size },
+    product.condition &&
+      product.condition !== 'N/A' && { label: 'Condition', value: product.condition },
+    product.category && { label: 'Category', value: product.category },
+  ].filter(Boolean)
 
-                {/* Savings Copy */}
-                {discount && (
-                    <div className="flex items-center gap-2 text-xs text-neutral-600">
-                        <TagIcon size={14} className="text-neutral-400" />
-                        <p>Save {discount}% on this piece</p>
-                    </div>
-                )}
-
-                {/* Product Information */}
-                <div className="mt-6 pt-6 border-t border-neutral-200">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        {product.brand && product.brand !== "N/A" && (
-                            <div>
-                                <p className="text-xs text-neutral-500 mb-1 uppercase tracking-wide">Brand</p>
-                                <p className="text-neutral-800 font-medium">{product.brand}</p>
-                            </div>
-                        )}
-                        {product.size && product.size !== "N/A" && (
-                            <div>
-                                <p className="text-xs text-neutral-500 mb-1 uppercase tracking-wide">Size</p>
-                                <p className="text-neutral-800 font-medium">{product.size}</p>
-                            </div>
-                        )}
-                        {product.condition && product.condition !== "N/A" && (
-                            <div>
-                                <p className="text-xs text-neutral-500 mb-1 uppercase tracking-wide">Condition</p>
-                                <p className="text-neutral-800 font-medium">{product.condition}</p>
-                            </div>
-                        )}
-                        {product.category && (
-                            <div>
-                                <p className="text-xs text-neutral-500 mb-1 uppercase tracking-wide">Category</p>
-                                <p className="text-neutral-800 font-medium">{product.category}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Cart / Quantity */}
-                <div className="flex flex-wrap items-end gap-6 mt-10">
-                    {product.sold ? (
-                        <button
-                            disabled
-                            className="bg-gray-400 text-white px-10 py-3 text-sm font-medium rounded-full cursor-not-allowed"
-                        >
-                            Sold Out
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')}
-                            className="bg-neutral-900 text-white px-10 py-3 text-sm font-medium rounded-full hover:bg-neutral-800 active:scale-[0.98] transition"
-                        >
-                            {!cart[productId] ? 'Add to Cart' : 'View Cart'}
-                        </button>
-                    )}
-                </div>
-
-                <hr className="border-neutral-200 my-8" />
-
-                {/* Trust / Meta */}
-                <div className="flex flex-col gap-3 text-sm text-neutral-600">
-                    <p className="flex gap-2 items-center">
-                        <EarthIcon size={16} className="text-neutral-400" />
-                        Free tracked shipping on all orders
-                    </p>
-                    <p className="flex gap-2 items-center">
-                        <CreditCardIcon size={16} className="text-neutral-400" />
-                        Secure checkout with buyer protection
-                    </p>
-                    <p className="flex gap-2 items-center">
-                        <UserIcon size={16} className="text-neutral-400" />
-                        Curated sellers & verified archive pieces
-                    </p>
-                </div>
-            </div>
+  return (
+    <div className="flex max-lg:flex-col gap-6 lg:gap-8">
+      {/* Image column */}
+      <div className="flex w-full max-sm:flex-col-reverse gap-2.5 sm:gap-3 lg:w-[52%]">
+        <div className="flex gap-2 sm:flex-col sm:gap-2.5">
+          {product.images.map((image, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setMainImage(product.images[index])}
+              className={`flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white transition sm:size-[4.5rem] ${
+                mainImage === image
+                  ? 'border-neutral-900'
+                  : 'border-neutral-200 hover:border-neutral-400'
+              }`}
+            >
+              <Image
+                src={image}
+                className="h-full w-full object-cover"
+                alt={`${product.name} view ${index + 1}`}
+                width={72}
+                height={72}
+              />
+            </button>
+          ))}
         </div>
-    )
+
+        <div className="min-w-0 flex-1">
+          <div className="overflow-hidden border border-neutral-200 bg-white">
+            <Image
+              src={mainImage}
+              alt={product.name}
+              className="block h-auto max-h-[62vh] w-full object-contain sm:max-h-[68vh]"
+              width={800}
+              height={1200}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Info column */}
+      <div className="flex min-w-0 flex-1 flex-col lg:pt-1">
+        <div className="border-b border-neutral-100 pb-4">
+          {showBrand && (
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+              {product.brand}
+            </p>
+          )}
+
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-[1.75rem]">
+              {product.name}
+            </h1>
+            {product.sold && (
+              <span className="shrink-0 bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+                Sold
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2.5 flex items-center gap-2">
+            <FavoriteButton
+              productId={productId}
+              initialIsFavorited={isFavorited}
+              size={18}
+              variant="inline"
+              onToggle={(newIsFavorited) => {
+                const wasFavorited = isFavorited
+                setIsFavorited(newIsFavorited)
+                if (newIsFavorited !== wasFavorited) {
+                  setFavoriteCount((prev) =>
+                    newIsFavorited ? prev + 1 : Math.max(0, prev - 1)
+                  )
+                }
+              }}
+            />
+            <p className="text-sm text-neutral-500">
+              {favoriteCount} {favoriteCount === 1 ? 'like' : 'likes'}
+            </p>
+          </div>
+        </div>
+
+        <div className="border-b border-neutral-100 py-4">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="text-3xl font-semibold tabular-nums text-neutral-900">
+              {currency}
+              {formattedPrice}
+            </p>
+            {discount && (
+              <>
+                <p className="text-base tabular-nums text-neutral-400 line-through">
+                  {currency}
+                  {formattedMrp}
+                </p>
+                <span className="bg-neutral-100 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-neutral-700">
+                  {discount}% off
+                </span>
+              </>
+            )}
+          </div>
+          {discount && savingsAmount && (
+            <p className="mt-1.5 text-sm text-neutral-500">
+              Save {currency}
+              {savingsAmount} on this piece
+            </p>
+          )}
+        </div>
+
+        {specItems.length > 0 && (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-neutral-100 py-4 text-sm">
+            {specItems.map((item) => (
+              <div key={item.label}>
+                <p className="mb-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+                  {item.label}
+                </p>
+                <p className="font-medium text-neutral-800">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="pt-4">
+          {product.sold ? (
+            <button
+              type="button"
+              disabled
+              className="w-full cursor-not-allowed bg-neutral-200 py-4 text-sm font-medium uppercase tracking-wide text-neutral-500"
+            >
+              Sold out
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                !isInCart ? addToCartHandler() : router.push('/cart')
+              }
+              className={`w-full py-4 text-sm font-medium uppercase tracking-wide transition active:scale-[0.98] ${
+                isInCart
+                  ? 'bg-white text-neutral-900 ring-1 ring-neutral-900 hover:bg-neutral-50'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800'
+              }`}
+            >
+              {!isInCart ? 'Add to cart' : 'View cart'}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-col gap-2 border-t border-neutral-100 pt-4 text-xs text-neutral-600 sm:text-sm">
+          <p className="flex items-center gap-2">
+            <EarthIcon size={15} className="shrink-0 text-neutral-400" />
+            Free tracked shipping on all orders
+          </p>
+          <p className="flex items-center gap-2">
+            <CreditCardIcon size={15} className="shrink-0 text-neutral-400" />
+            Secure checkout with buyer protection
+          </p>
+          <p className="flex items-center gap-2">
+            <UserIcon size={15} className="shrink-0 text-neutral-400" />
+            Curated sellers & verified archive pieces
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default ProductDetails

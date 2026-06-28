@@ -1,7 +1,6 @@
 import { Outfit } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import StoreProvider from "@/app/StoreProvider";
-import Chatbot from "@/components/Chatbot";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 
@@ -21,7 +20,6 @@ export default function RootLayout({ children }) {
                     <StoreProvider>
                         <Toaster />
                         {children}
-                        <Chatbot />
                     </StoreProvider>
                 </body>
             </html>

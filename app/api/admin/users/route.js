@@ -26,12 +26,45 @@ export async function GET(request) {
                     }
                 },
                 buyerOrders: {
+                    orderBy: { createdAt: 'desc' },
                     select: {
                         id: true,
                         total: true,
                         status: true,
                         createdAt: true,
-                    }
+                        updatedAt: true,
+                        paymentMethod: true,
+                        isPaid: true,
+                        isRefunded: true,
+                        isCouponUsed: true,
+                        address: {
+                            select: {
+                                name: true,
+                                email: true,
+                                street: true,
+                                city: true,
+                                state: true,
+                                zip: true,
+                                country: true,
+                                phone: true,
+                            },
+                        },
+                        store: {
+                            select: {
+                                name: true,
+                                username: true,
+                            },
+                        },
+                        orderItems: {
+                            select: {
+                                quantity: true,
+                                price: true,
+                                product: {
+                                    select: { name: true },
+                                },
+                            },
+                        },
+                    },
                 },
                 _count: {
                     select: {

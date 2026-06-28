@@ -1,26 +1,59 @@
 'use client'
-import Link from "next/link"
-import { useUser, UserButton } from "@clerk/nextjs"
 
-const AdminNavbar = () => {
+import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
+import { UserButton, useUser } from '@clerk/nextjs'
 
-        const {user} = useUser()
+export default function AdminNavbar({ onMenuToggle, isMobileOpen }) {
+  const { user } = useUser()
 
+  return (
+    <header className="sticky top-0 z-30 shrink-0 border-b border-slate-200 bg-white">
+      <div className="flex h-14 items-center justify-between gap-4 px-4 sm:h-[3.75rem] sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="inline-flex size-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+            aria-label={
+              isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'
+            }
+            aria-expanded={isMobileOpen}
+          >
+            {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
 
-    return (
-        <div className="flex items-center justify-between px-12 py-3 border-b border-slate-200 transition-all">
-            <Link href="/" className="relative text-4xl font-semibold text-slate-700">
-                <span className="text-neutral-600">vette</span>clothing<span className="text-neutral-600 text-5xl leading-0">.</span>
-                <p className="absolute text-xs font-semibold -top-1 -right-13 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500">
-                    Admin
-                </p>
-            </Link>
-            <div className="flex items-center gap-3">
-                <p>Hi, {user?.firstName}</p>
-                <UserButton />
-            </div>
+          <Link
+            href="/"
+            className="group flex min-w-0 items-baseline gap-0.5 truncate text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+          >
+            <span className="text-slate-500 transition-colors group-hover:text-slate-700">
+              vette
+            </span>
+            clothing
+            <span className="text-slate-400">.</span>
+            <span className="ml-2 inline-flex shrink-0 items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600 ring-1 ring-slate-200">
+              Admin
+            </span>
+          </Link>
         </div>
-    )
-}
 
-export default AdminNavbar
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="hidden text-right sm:block">
+            <p className="text-sm font-medium text-slate-800">
+              {user?.firstName || 'Admin'}
+            </p>
+            <p className="text-xs text-slate-500">Administrator</p>
+          </div>
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'size-8 sm:size-9 ring-2 ring-slate-100',
+              },
+            }}
+          />
+        </div>
+      </div>
+    </header>
+  )
+}

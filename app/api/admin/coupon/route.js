@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/apiGuard";
 
 
 // Add new coupon
@@ -16,7 +17,9 @@ export async function POST(request) {
         return NextResponse.json({ error: "not authorized" }, { status: 401 })
       }
 
-      const { coupon } = await request.json()
+      const parsed = await readJsonBody(request)
+      if (parsed.error) return parsed.error
+      const { coupon } = parsed.body
         coupon.code = coupon.code.toUpperCase()
 
             await prisma.coupon.create({data: coupon}).then(async(coupon) => {

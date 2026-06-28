@@ -17,7 +17,7 @@
 | Field | Value |
 |-------|--------|
 | **GitHub repository title** | `Vette Clothing — Production E-Commerce Platform (Next.js + PostgreSQL)` |
-| **Short description** | Enterprise-grade consumer marketplace for archive fashion: CRM-integrated lead capture, agentic RAG chatbot, and automated content portals—built on Next.js 16, Prisma, and Neon PostgreSQL. |
+| **Short description** | Enterprise-grade consumer marketplace for archive fashion: CRM-integrated lead capture and automated content portals—built on Next.js 16, Prisma, and Neon PostgreSQL. |
 | **Primary domain** | Consumer storefront, vendor operations, platform administration |
 | **Runtime** | Node.js 18+, Next.js App Router, serverless-ready API routes |
 
@@ -28,19 +28,18 @@
 1. [Project Overview](#project-overview)
 2. [Core Platform Capabilities](#core-platform-capabilities)
 3. [Technical Stack & Architecture](#technical-stack--architecture)
-4. [Multi-Agent RAG Inference Flow](#multi-agent-rag-inference-flow)
-5. [Repository Structure](#repository-structure)
-6. [Local Development](#local-development)
-7. [Production Environment Configuration](#production-environment-configuration)
-8. [Security Posture](#security-posture)
-9. [Operational Notes](#operational-notes)
-10. [License & Contributing](#license--contributing)
+4. [Repository Structure](#repository-structure)
+5. [Local Development](#local-development)
+6. [Production Environment Configuration](#production-environment-configuration)
+7. [Security Posture](#security-posture)
+8. [Operational Notes](#operational-notes)
+9. [License & Contributing](#license--contributing)
 
 ---
 
 ## Project Overview
 
-**Vette Clothing** is the company's primary consumer-facing e-commerce application—a full-stack production system built without a commercial template foundation. The platform delivers a curated shopping experience for avant-garde and archive fashion while supporting multi-vendor commerce, real-time AI assistance, and event-driven business automation.
+**Vette Clothing** is the company's primary consumer-facing e-commerce application—a full-stack production system built without a commercial template foundation. The platform delivers a curated shopping experience for avant-garde and archive fashion while supporting multi-vendor commerce and event-driven business automation.
 
 The architecture separates concerns across three operational planes:
 
@@ -50,7 +49,7 @@ The architecture separates concerns across three operational planes:
 | **Application** | Route handlers, Clerk authentication, Stripe payments, ImageKit media pipeline |
 | **Data & Automation** | PostgreSQL via Prisma ORM (Neon serverless adapter), Inngest durable workflows |
 
-End users interact with product discovery, cart/checkout, favorites, and conversational support. Vendors manage inventory through dedicated dashboards. Platform administrators govern store approval, coupons, and catalog integrity.
+End users interact with product discovery, cart/checkout, and favorites. Vendors manage inventory through dedicated dashboards. Platform administrators govern store approval, coupons, and catalog integrity.
 
 ---
 
@@ -77,32 +76,7 @@ Lead payloads are normalized at the API boundary, validated server-side, and emi
 
 ---
 
-### 2. AI-Driven Conversational Chatbot
-
-A production-hardened, agentic conversational layer provides real-time consumer support with domain-specific retrieval context and streaming inference.
-
-**Implementation map**
-
-| Component | Path | Role |
-|-----------|------|------|
-| UI shell | `components/Chatbot.jsx` | Floating assistant, `useChat` streaming, session persistence |
-| Inference API | `app/api/chatbot/route.js` | `streamText`, rate limits, origin validation, sanitization |
-| Knowledge base | `lib/data.ts` | System prompt: designer expertise, policies, guardrails |
-| Security | `lib/security.js`, `lib/rateLimit.js`, `lib/cors.js` | Injection detection, XSS scrubbing, CORS, identifier hashing |
-| Observability | `lib/logScrubber.js` | PII-safe structured logging |
-
-**Capabilities**
-
-- **Retrieval-Augmented Generation (RAG)** — Static knowledge retrieval injects brand, designer, sizing, authenticity, and policy context into every inference via the system message envelope before token generation.
-- **Real-time streaming** — Vercel AI SDK (`ai` + `@ai-sdk/openai`) streams `gpt-4o-mini` responses over `text/event-stream` with `useChat` client consumption.
-- **Session continuity** — Browser `localStorage` retains up to 50 messages; session IDs correlate anonymous and authenticated traffic for rate limiting.
-- **Defense in depth** — 10 req/min rate limits, prompt-injection heuristics, response leakage validation, and configurable `CHATBOT_ALLOWED_ORIGINS`.
-
-Extended documentation: [`CHATBOT_DOCUMENTATION.md`](./CHATBOT_DOCUMENTATION.md), [`CHATBOT_SETUP.md`](./CHATBOT_SETUP.md).
-
----
-
-### 3. Interactive Content Portal
+### 2. Interactive Content Portal
 
 Automated media and editorial modules drive homepage engagement through composable content blocks and CDN-backed asset delivery.
 
@@ -127,7 +101,7 @@ The portal architecture supports creator-centric modules (video embeds, chapter 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         Client (Browser / Mobile)                        │
-│  React 19 · Redux Toolkit · Clerk Components · @ai-sdk/react useChat    │
+│  React 19 · Redux Toolkit · Clerk Components                             │
 └───────────────────────────────────┬─────────────────────────────────────┘
                                     │ HTTPS
 ┌───────────────────────────────────▼─────────────────────────────────────┐
@@ -139,10 +113,10 @@ The portal architecture supports creator-centric modules (video embeds, chapter 
 └───────┬─────────────────┬─────────────────┬─────────────────┬───────────┘
         │                 │                 │                 │
         ▼                 ▼                 ▼                 ▼
-   ┌─────────┐     ┌───────────┐     ┌──────────┐     ┌──────────────┐
-   │ Clerk   │     │  Stripe   │     │ ImageKit │     │   OpenAI     │
-   │  Auth   │     │ Payments  │     │   CDN    │     │  Inference   │
-   └────┬────┘     └───────────┘     └──────────┘     └──────────────┘
+   ┌─────────┐     ┌───────────┐     ┌──────────┐
+   │ Clerk   │     │  Stripe   │     │ ImageKit │
+   │  Auth   │     │ Payments  │     │   CDN    │
+   └────┬────┘     └───────────┘     └──────────┘
         │ webhooks
         ▼
    ┌─────────┐     ┌───────────────────────────────────────────────────┐
@@ -162,7 +136,6 @@ The portal architecture supports creator-centric modules (video embeds, chapter 
 | ORM / DB | Prisma 6, PostgreSQL, `@prisma/adapter-neon`, `@neondatabase/serverless` |
 | Auth | Clerk (`@clerk/nextjs`) |
 | Payments | Stripe (Checkout + webhooks) |
-| AI | Vercel AI SDK, OpenAI (`gpt-4o-mini`) |
 | Background jobs | Inngest |
 | Media | ImageKit |
 | Charts (admin) | Recharts |
@@ -170,60 +143,6 @@ The portal architecture supports creator-centric modules (video embeds, chapter 
 ### Data model (high level)
 
 Prisma schema (`prisma/schema.prisma`) defines: `User`, `Store`, `Product`, `Order`, `OrderItem`, `Address`, `Rating`, `Coupon`, `UserFavorite` with relational integrity and cascade rules for catalog operations.
-
----
-
-## Multi-Agent RAG Inference Flow
-
-The chatbot implements a logical multi-agent pipeline: a **router/orchestrator** classifies intent, **specialist agents** draw from retrieved context slices, and a **synthesis agent** streams the final consumer-facing response. Physical deployment consolidates orchestration in `app/api/chatbot/route.js` with retrieval from `lib/data.ts` and optional future vector store hooks.
-
-```mermaid
-flowchart TB
-    subgraph Client["Client Layer"]
-        U[User Message]
-        UI[Chatbot.jsx · useChat]
-    end
-
-    subgraph Edge["API Gateway · /api/chatbot"]
-        CORS[Origin Validation]
-        RL[Rate Limiter]
-        SAN[Sanitize + Injection Guard]
-    end
-
-    subgraph Orchestrator["Agent Orchestrator"]
-        R[Intent Router]
-        R --> P[Policy Agent]
-        R --> S[Sizing / Fit Agent]
-        R --> D[Designer Catalog Agent]
-        R --> G[General Archive Agent]
-    end
-
-    subgraph RAG["Retrieval Layer"]
-        KB[(Knowledge Base · lib/data.ts)]
-        CAT[(Product Catalog · PostgreSQL)]
-        POL[(Store Policies)]
-        KB --> CTX[Context Assembly]
-        CAT --> CTX
-        POL --> CTX
-    end
-
-    subgraph Inference["Inference Engine"]
-        CTX --> LLM[OpenAI gpt-4o-mini · streamText]
-        LLM --> STR[Token Stream]
-    end
-
-    U --> UI --> CORS --> RL --> SAN --> R
-    P & S & D & G --> CTX
-    STR --> UI
-```
-
-**Request lifecycle**
-
-1. Client submits message array with optional Clerk `userId`.
-2. Gateway enforces CORS, rate limit (IP + session composite key), and message schema validation.
-3. Orchestrator prepends RAG context via `initialMessage` and sanitized conversation history.
-4. `streamText` emits tokens; `onFinish` logs scrubbed usage metadata in production.
-5. Client renders Markdown via `react-markdown` with persisted thread state.
 
 ---
 
@@ -235,8 +154,8 @@ VetteClothing/
 │   ├── (public)/          # Storefront: shop, product, cart, auth, create-store
 │   ├── admin/             # Platform administration
 │   ├── store/             # Vendor dashboard
-│   └── api/               # REST route handlers (chatbot, orders, stripe, inngest, …)
-├── components/            # UI modules (Chatbot, CuratedDrop*, ImageCarousel, …)
+│   └── api/               # REST route handlers (orders, stripe, inngest, …)
+├── components/            # UI modules (CuratedDrop*, ImageCarousel, …)
 ├── lib/                   # Prisma client, security, Redux slices, utilities
 ├── prisma/                # Schema and migrations
 ├── inngest/               # Durable workflow definitions
@@ -254,7 +173,7 @@ VetteClothing/
 - **Node.js** ≥ 18
 - **npm** (recommended) or compatible package manager
 - **PostgreSQL** database (Neon recommended for parity with production)
-- API keys for Clerk, Stripe, ImageKit, and OpenAI (see configuration below)
+- API keys for Clerk, Stripe, and ImageKit (see configuration below)
 
 ### Installation
 
@@ -277,7 +196,7 @@ npx prisma db push
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The AI chatbot renders globally from `app/layout.jsx`.
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Build & production preview
 
@@ -318,7 +237,6 @@ Configure secrets in your hosting provider (Vercel, Railway, etc.) or a managed 
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit public key |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit private key |
 | `IMAGEKIT_URL_ENDPOINT` | ImageKit URL endpoint |
-| `OPENAI_API_KEY` | OpenAI API key for chatbot inference |
 | `INNGEST_EVENT_KEY` | Inngest event key (production) |
 | `INNGEST_SIGNING_KEY` | Inngest signing key for serve endpoint |
 
@@ -327,8 +245,7 @@ Configure secrets in your hosting provider (Vercel, Railway, etc.) or a managed 
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_CURRENCY_SYMBOL` | Display currency symbol (default `$`) |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for CORS and metadata |
-| `CHATBOT_ALLOWED_ORIGINS` | Comma-separated allowed origins for chatbot API |
+| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for metadata |
 | `ADMIN_EMAIL` | Comma-separated admin emails for `authAdmin` middleware |
 | `NODE_ENV` | Set to `production` in deployed environments |
 
@@ -353,10 +270,6 @@ IMAGEKIT_PUBLIC_KEY=public_...
 IMAGEKIT_PRIVATE_KEY=private_...
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_id
 
-# AI Chatbot
-OPENAI_API_KEY=sk-...
-CHATBOT_ALLOWED_ORIGINS=http://localhost:3000
-
 # Platform
 NEXT_PUBLIC_CURRENCY_SYMBOL=$
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -372,7 +285,6 @@ INNGEST_SIGNING_KEY=
 - [ ] Run `npx prisma migrate deploy` (or `db push` for controlled releases) against production database
 - [ ] Register Clerk webhook → `https://<domain>/api/inngest`
 - [ ] Register Stripe webhook → `https://<domain>/api/stripe`
-- [ ] Set `CHATBOT_ALLOWED_ORIGINS` to production domain(s) only
 - [ ] Confirm ImageKit CORS and upload policies
 - [ ] Enable structured logging / APM (Sentry, Datadog) for API routes
 - [ ] Replace in-memory rate limiter with Redis/Upstash for multi-instance deployments (see `lib/rateLimit.js`)
@@ -387,20 +299,16 @@ INNGEST_SIGNING_KEY=
 | **Inngest** | Durable workflows, CRM sync, scheduled jobs |
 | **Stripe** | Payment capture and webhook reconciliation |
 | **ImageKit** | Image CDN, transforms, vendor uploads |
-| **OpenAI** | Chatbot inference |
 
 ---
 
 ## Security Posture
 
-- **Authentication** — Clerk-managed sessions; optional `userId` binding for chatbot rate limiting
+- **Authentication** — Clerk-managed sessions
 - **Authorization** — `middlewares/authAdmin.js`, `middlewares/authSeller.js` for role-gated routes
-- **Input hardening** — Chatbot sanitization, prompt-injection detection, 5,000-character caps
-- **Transport** — HTTPS-only production; strict chatbot origin allowlists
-- **Logging** — `safeLog` scrubs PII; production logs token usage without message bodies
+- **Rate limiting** — Per-route limits via `lib/apiGuard.js` and `lib/rateLimit.js`
+- **Logging** — `safeLog` scrubs PII in production logs
 - **Payments** — Stripe webhook signature verification
-
-See [`SECURITY_IMPROVEMENTS.md`](./SECURITY_IMPROVEMENTS.md) and [`SECURITY_VERIFICATION.md`](./SECURITY_VERIFICATION.md).
 
 ---
 
@@ -415,9 +323,6 @@ See [`SECURITY_IMPROVEMENTS.md`](./SECURITY_IMPROVEMENTS.md) and [`SECURITY_VERI
 
 **Additional documentation**
 
-- [`CHATBOT_DOCUMENTATION.md`](./CHATBOT_DOCUMENTATION.md) — Chatbot API, security, and operations
-- [`CHATBOT_SETUP.md`](./CHATBOT_SETUP.md) — Quick-start for AI features
-- [`IMPLEMENTATION_SUMMARY.md`](./IMPLEMENTATION_SUMMARY.md) — Chatbot delivery summary
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution guidelines
 
 ---

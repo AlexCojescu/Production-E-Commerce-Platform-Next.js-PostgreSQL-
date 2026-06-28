@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma"
 import { getAuth, clerkClient } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
+import { readJsonBody } from "@/lib/apiGuard"
 
 export async function POST(request) {
   try {
@@ -77,7 +78,9 @@ export async function POST(request) {
     }
 
     // 3. Get productId from request
-    const { productId } = await request.json()
+    const parsed = await readJsonBody(request)
+    if (parsed.error) return parsed.error
+    const { productId } = parsed.body
     if (!productId) {
       return NextResponse.json({ error: 'Product ID required' }, { status: 400 })
     }

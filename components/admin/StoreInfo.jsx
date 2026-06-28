@@ -1,42 +1,85 @@
 'use client'
-import Image from "next/image"
-import { MapPin, Mail, Phone } from "lucide-react"
 
-const StoreInfo = ({store}) => {
-    return (
-        <div className="flex-1 space-y-2 text-sm">
-            <Image width={100} height={100} src={store.logo} alt={store.name} className="max-w-20 max-h-20 object-contain shadow rounded-full max-sm:mx-auto" />
-            <div className="flex flex-col sm:flex-row gap-3 items-center">
-                <h3 className="text-xl font-semibold text-slate-800"> {store.name} </h3>
-                <span className="text-sm">@{store.username}</span>
+import Image from 'next/image'
+import { MapPin, Mail, Phone } from 'lucide-react'
+import { AdminBadge } from './ui'
 
-                {/* Status Badge */}
-                <span
-                    className={`text-xs font-semibold px-4 py-1 rounded-full ${store.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : store.status === 'rejected'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
-                        }`}
-                >
-                    {store.status}
-                </span>
-            </div>
-
-            <p className="text-slate-600 my-5 max-w-2xl">{store.description}</p>
-            <p className="flex items-center gap-2"> <MapPin size={16} /> {store.address}</p>
-            <p className="flex items-center gap-2"><Phone size={16} /> {store.contact}</p>
-            <p className="flex items-center gap-2"><Mail size={16} />  {store.email}</p>
-            <p className="text-slate-700 mt-5">Applied  on <span className="text-xs">{new Date(store.createdAt).toLocaleDateString()}</span> by</p>
-            <div className="flex items-center gap-2 text-sm ">
-                <Image width={36} height={36} src={store.user.image} alt={store.user.name} className="w-9 h-9 rounded-full" />
-                <div>
-                    <p className="text-slate-600 font-medium">{store.user.name}</p>
-                    <p className="text-slate-400">{store.user.email}</p>
-                </div>
-            </div>
-        </div>
-    )
+const statusVariant = {
+  pending: 'warning',
+  rejected: 'danger',
+  approved: 'success',
 }
 
-export default StoreInfo
+export default function StoreInfo({ store }) {
+  const appliedDate = new Date(store.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return (
+    <div className="min-w-0 flex-1 space-y-4 max-lg:space-y-3 lg:space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-4">
+        <Image
+          width={72}
+          height={72}
+          src={store.logo}
+          alt={store.name}
+          className="size-14 shrink-0 rounded-xl border border-slate-100 bg-slate-50 object-contain p-1 lg:size-16"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-1.5 max-lg:gap-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-2">
+            <h3 className="truncate text-base font-semibold text-slate-900 lg:text-lg">
+              {store.name}
+            </h3>
+            <span className="text-sm text-slate-500">@{store.username}</span>
+            <AdminBadge variant={statusVariant[store.status] || 'neutral'}>
+              {store.status}
+            </AdminBadge>
+          </div>
+          {store.description && (
+            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">
+              {store.description}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <dl className="grid gap-3 text-sm lg:grid-cols-2">
+        <div className="flex items-start gap-2 text-slate-600">
+          <MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
+          <dd className="min-w-0 break-words">{store.address}</dd>
+        </div>
+        <div className="flex items-start gap-2 text-slate-600">
+          <Phone size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
+          <dd className="min-w-0 break-words">{store.contact}</dd>
+        </div>
+        <div className="flex items-start gap-2 text-slate-600 lg:col-span-2">
+          <Mail size={16} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
+          <dd className="min-w-0 break-all">{store.email}</dd>
+        </div>
+      </dl>
+
+      <div className="border-t border-slate-100 pt-3 lg:pt-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          Applied {appliedDate}
+        </p>
+        <div className="mt-2 flex items-center gap-3">
+          <Image
+            width={36}
+            height={36}
+            src={store.user.image}
+            alt={store.user.name}
+            className="size-9 shrink-0 rounded-full ring-2 ring-slate-100"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-800">
+              {store.user.name}
+            </p>
+            <p className="truncate text-xs text-slate-500">{store.user.email}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

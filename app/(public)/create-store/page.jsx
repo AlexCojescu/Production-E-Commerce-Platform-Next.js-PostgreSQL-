@@ -26,7 +26,7 @@ export default function CreateStore() {
         email: "",
         contact: "",
         address: "",
-        image: ""
+        image: null
     })
 
     const onChangeHandler = (e) => {
@@ -124,7 +124,7 @@ export default function CreateStore() {
 
                         <label className="mt-10 cursor-pointer">
                             Store Logo
-                            <Image src={storeInfo.image ? URL.createObjectURL(storeInfo.image) : assets.upload_area} className="rounded-lg mt-2 h-16 w-auto" alt="" width={150} height={100} />
+                            <Image src={storeInfo.image instanceof File ? URL.createObjectURL(storeInfo.image) : assets.upload_area} className="rounded-lg mt-2 h-16 w-auto" alt="Store logo upload" width={150} height={100} />
                             <input type="file" accept="image/*" onChange={(e) => setStoreInfo({ ...storeInfo, image: e.target.files[0] })} hidden />
                         </label>
 

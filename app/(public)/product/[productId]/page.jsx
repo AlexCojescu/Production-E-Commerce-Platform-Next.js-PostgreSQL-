@@ -21,28 +21,23 @@ export default function Product() {
 
   return (
     <div className="bg-white">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
-        {/* Breadcrumbs */}
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
         <nav
           aria-label="Breadcrumb"
-          className="mt-3 mb-4 text-[11px] leading-snug text-neutral-400 sm:mt-6 sm:mb-6 sm:text-sm"
+          className="mb-3 mt-3 text-[11px] leading-snug text-neutral-400 sm:mb-4 sm:mt-5 sm:text-sm"
         >
           Home / Products /{" "}
           <span className="text-neutral-600">{product?.category}</span>
         </nav>
 
-        {/* Product Details */}
         {product && (
-          <div className="pb-10 sm:pb-14">
+          <>
             <ProductDetails product={product} />
-          </div>
-        )}
 
-        {/* Description */}
-        {product && (
-          <section className="border-t border-neutral-200 pt-6 pb-16 sm:pt-10 sm:pb-24">
-            <ProductDescription product={product} />
-          </section>
+            <section className="mt-6 border-t border-neutral-200 pt-5 pb-10 sm:mt-8 sm:pb-12">
+              <ProductDescription product={product} />
+            </section>
+          </>
         )}
       </div>
     </div>

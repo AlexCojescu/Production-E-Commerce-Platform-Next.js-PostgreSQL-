@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/apiGuard";
 
 // Approve Seller
 export async function POST(request) {
@@ -15,7 +16,9 @@ export async function POST(request) {
 
     // ... continued from previous code snippets ...
 
-    const { storeId, status } = await request.json();
+    const parsed = await readJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const { storeId, status } = parsed.body;
 
     if (status === 'approved') {
       await prisma.store.update({

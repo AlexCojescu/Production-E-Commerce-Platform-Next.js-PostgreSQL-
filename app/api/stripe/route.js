@@ -3,6 +3,11 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import {
+  parseTextBody,
+  BodyTooLargeError,
+  MAX_WEBHOOK_BODY_BYTES,
+} from "@/lib/requestBody";
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -22,8 +27,16 @@ export async function POST(request) {
 
     const stripe = getStripeClient()
 
-    // Get raw body for Stripe signature verification
-    const body = await request.text(); // raw string, no body parser needed [web:24][web:27]
+    // Get raw body for Stripe signature verification (size-capped)
+    let body
+    try {
+      body = await parseTextBody(request, MAX_WEBHOOK_BODY_BYTES)
+    } catch (error) {
+      if (error instanceof BodyTooLargeError) {
+        return NextResponse.json({ error: error.message }, { status: 413 })
+      }
+      throw error
+    }
     const sig = request.headers.get("stripe-signature");
 
     const event = stripe.webhooks.constructEvent(
@@ -49,12 +62,14 @@ export async function POST(request) {
       const orderIdsArray = orderIds.split(",");
 
       if (isPaid) {
-        // mark order as paid
         await Promise.all(
           orderIdsArray.map(async (orderId) => {
             await prisma.order.update({
               where: { id: orderId },
-              data: { isPaid: true },
+              data: {
+                isPaid: true,
+                stripePaymentIntentId: paymentIntentId,
+              },
             });
           })
         );

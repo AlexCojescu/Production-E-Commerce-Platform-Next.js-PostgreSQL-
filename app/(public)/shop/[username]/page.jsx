@@ -81,9 +81,9 @@ export default function StoreShop() {
                             No products listed yet.
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-1.5 gap-y-5 sm:gap-x-2 lg:gap-x-2">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                                <ProductCard key={product.id} product={product} variant="shop" />
                             ))}
                         </div>
                     )}

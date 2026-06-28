@@ -2,9 +2,10 @@ import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { uploadValidatedImage, UploadValidationError } from "@/lib/uploadImage";
-import { enforceRateLimit, inputValidationResponse } from "@/lib/apiGuard";
+import { enforceRateLimit, inputValidationResponse, assertBodySizeWithin, BodyTooLargeError } from "@/lib/apiGuard";
 import { requireString, requireEmail, LIMITS } from "@/lib/inputLimits";
 import { safeLog } from "@/lib/logScrubber";
+import { MAX_UPLOAD_BYTES } from "@/lib/imageValidation";
 
 //create the store
 
@@ -156,6 +157,15 @@ export async function POST(request){
         }
         
         //get
+
+        try {
+            assertBodySizeWithin(request, MAX_UPLOAD_BYTES)
+        } catch (error) {
+            if (error instanceof BodyTooLargeError) {
+                return NextResponse.json({ error: error.message }, { status: 413 })
+            }
+            throw error
+        }
 
         const formData = await request.formData()
 

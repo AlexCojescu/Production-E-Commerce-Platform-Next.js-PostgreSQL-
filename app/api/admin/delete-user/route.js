@@ -3,6 +3,7 @@ import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { isAdminEmail } from "@/lib/requiredEnv";
+import { readJsonBody } from "@/lib/apiGuard";
 
 // Delete a user and all related data
 export async function POST(request) {
@@ -14,7 +15,9 @@ export async function POST(request) {
             return NextResponse.json({ error: 'not authorized' }, { status: 401 });
         }
 
-        const { userToDeleteId } = await request.json();
+        const parsed = await readJsonBody(request);
+        if (parsed.error) return parsed.error;
+        const { userToDeleteId } = parsed.body;
 
         if (!userToDeleteId) {
             return NextResponse.json({ error: 'missing userToDeleteId' }, { status: 400 });

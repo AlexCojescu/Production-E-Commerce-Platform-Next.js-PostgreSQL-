@@ -169,7 +169,7 @@ function ShopContent() {
           </div>
         )}
 
-        <div className="flex gap-6 lg:gap-8 w-full min-w-0">
+        <div className="flex gap-4 lg:gap-5 w-full min-w-0">
           {/* Desktop Filters Sidebar */}
           <div className="hidden md:block w-64 shrink-0">
             <ShopFilters
@@ -194,9 +194,9 @@ function ShopContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-28 w-full">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-1.5 gap-y-5 sm:gap-x-2 lg:gap-x-2 mb-28 w-full">
                 {sortedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} variant="shop" />
                 ))}
               </div>
             )}

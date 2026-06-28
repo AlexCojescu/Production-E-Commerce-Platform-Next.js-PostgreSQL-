@@ -10,11 +10,11 @@ export default function ShopFilters({
   onMobileClose
 }) {
   const [expandedSections, setExpandedSections] = useState({
-    category: true,
-    brand: true,
-    condition: true,
-    price: true,
-    sold: true
+    category: false,
+    brand: false,
+    condition: false,
+    priceRange: false,
+    sold: false,
   })
 
   // Prevent body scroll when mobile drawer is open
@@ -108,11 +108,11 @@ export default function ShopFilters({
     return (filters[filterKey] || []).length
   }
 
-  const FilterSection = ({ title, items, filterKey, isExpanded }) => {
+  const FilterSection = ({ title, items, filterKey, isExpanded, hideBottomBorder = false }) => {
     const activeCount = getActiveCount(filterKey)
     
     return (
-      <div className="border-b border-gray-200 py-3 md:py-4">
+      <div className={`py-3 md:py-4${hideBottomBorder ? '' : ' border-b border-gray-200'}`}>
         <button
           onClick={() => toggleSection(filterKey)}
           className="w-full flex items-center justify-between text-left font-medium text-gray-900 hover:text-black transition py-2 -mx-1 px-1 rounded-md active:bg-gray-100 touch-manipulation"
@@ -211,7 +211,7 @@ export default function ShopFilters({
           title="Price Range"
           items={priceRanges}
           filterKey="priceRange"
-          isExpanded={expandedSections.price}
+          isExpanded={expandedSections.priceRange}
         />
 
         <FilterSection
@@ -219,6 +219,7 @@ export default function ShopFilters({
           items={soldOptions}
           filterKey="sold"
           isExpanded={expandedSections.sold}
+          hideBottomBorder
         />
       </div>
     </>
@@ -288,7 +289,7 @@ export default function ShopFilters({
                 title="Price Range"
                 items={priceRanges}
                 filterKey="priceRange"
-                isExpanded={expandedSections.price}
+                isExpanded={expandedSections.priceRange}
               />
 
               <FilterSection
@@ -296,6 +297,7 @@ export default function ShopFilters({
                 items={soldOptions}
                 filterKey="sold"
                 isExpanded={expandedSections.sold}
+                hideBottomBorder
               />
             </div>
           </div>
